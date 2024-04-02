@@ -8,7 +8,7 @@ using GeometryBasics
 using HDF5
 
 #for testing purpose only
-#i_batch=0;i_model=2;i_mesh=2;mypath="D:\\work\\LCMsim_cases";repositorypath="D:\\work\\github\\LCMsim_v2.jl";
+#i_batch=0;i_model=2;i_mesh=1;mypath="D:\\work\\github\\LCMsim_GUI\\gui_and_cases\\cases";repositorypath="D:\\work\\github\\LCMsim_v2.jl";guipath="D:\\work\\github\\lcmsim_gui\\gui_and_cases\\gui"
 
     @info "i_batch = $i_batch"
     @info "i_model = $i_model"
@@ -938,6 +938,9 @@ using HDF5
             xvec1=Array{Float64}(undef, M)
             yvec1=Array{Float64}(undef, M)
             zvec1=Array{Float64}(undef, M)
+            xvec2=Array{Float64}(undef, N)
+            yvec2=Array{Float64}(undef, N)
+            zvec2=Array{Float64}(undef, N)
             cgammavec=Array{Float64}(undef, 3, N)
             cgammavec_bw=Array{Float64}(undef, 3, N)
 
@@ -1003,15 +1006,26 @@ using HDF5
             az=(deltaz+eps_delta)/(mindelta+eps_delta)
 
             points1::Vector{Point3f0} = []
-            for gid in 1:M        
-                    xvec1[gid]=grid[gid, 1]
-                    yvec1[gid]=grid[gid, 2]
-                    zvec1[gid]=grid[gid, 3]
+            #use cell centers instead
+            for cid in 1:N
+                xvec2[cid]=0.
+                yvec2[cid]=0.
+                zvec2[cid]=0.
+                for j in 1:3
+                    gid = cells[cid, j]
+                    x = grid[gid, 1]
+                    y = grid[gid, 2]
+                    z = grid[gid, 3]
+                    xvec2[cid]=xvec2[cid]+0.3333*x
+                    yvec2[cid]=yvec2[cid]+0.3333*y
+                    zvec2[cid]=zvec2[cid]+0.3333*z
+                end
             end
-            points1=rand(Point3f0, length(xvec1))
-            for i in 1:length(xvec1)
-                points1[i]=Point3f0(xvec1[i],yvec1[i],zvec1[i])
+            points1=rand(Point3f0, length(xvec2))
+            for i in 1:length(xvec2)
+                points1[i]=Point3f0(xvec2[i],yvec2[i],zvec2[i])
             end
+
             positions = Observable(points1) 
             inletpos_xyz=Array{Float64}[]
 
