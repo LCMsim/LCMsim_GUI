@@ -231,6 +231,12 @@ using HDF5
             if isfile(_meshfile)
                 rm(_meshfile)
             end
+            filename_parts=splitpath(meshfile)
+            _psetfile=joinpath( joinpath(filename_parts[1:end-1]) ,"_pset.csv")
+            __psetfile=joinpath( joinpath(filename_parts[1:end-1]) ,"__pset.csv")
+            if isfile(_psetfile)
+                mv(_psetfile,__psetfile,force=true) 
+            end
         else
             partfile = joinpath(mypath,"_part_description.csv")
             writefilename=partfile
@@ -239,57 +245,57 @@ using HDF5
             lines=String[]
             notusedsets = Vector{String}()
             i_model=parse(Int,get_gtk_property(par_0,:text,String))  #2
-            if i_model==1 || i_model==2
+            if i_model==1 || i_model==2 || i_model==3
                 push!(lines,"name,type,part_id,thickness,porosity,porosity_noise,permeability,permeability_noise,alpha,refdir1,refdir2,refdir3,porosity_1,p_1")
                 push!(lines,string("base,base,1,",str11,",",str12,",0.0,",str13,",0.0,",str14,",",str15,",",str16,",",str17,",",str12,",","1e5"))
-                if patchtype1val==0
+                #if patchtype1val==0
                     push!(notusedsets, "2")
-                else
-                    if patchtype1val==1
-                        patchtype="inlet"
-                    elseif patchtype1val==2
-                        patchtype="patch"
-                    elseif patchtype1val==3
-                        patchtype="outlet"
-                    end
-                    push!(lines,string("patch1,", patchtype,",2,",str21,",",str22,",0.0,",str23,",0.0,",str24,",",str25,",",str26,",",str27,",",str22,",","1e5"))
-                end
-                if patchtype2val==0
+                #else
+                #    if patchtype1val==1
+                #        patchtype="inlet"
+                #    elseif patchtype1val==2
+                #        patchtype="patch"
+                #    elseif patchtype1val==3
+                #        patchtype="outlet"
+                #    end
+                #    push!(lines,string("patch1,", patchtype,",2,",str21,",",str22,",0.0,",str23,",0.0,",str24,",",str25,",",str26,",",str27,",",str22,",","1e5"))
+                #end
+                #if patchtype2val==0
                     push!(notusedsets, "3")
-                else
-                    if patchtype2val==1
-                        patchtype="inlet"
-                    elseif patchtype2val==2
-                        patchtype="patch"
-                    elseif patchtype2val==3
-                        patchtype="outlet"
-                    end
-                    push!(lines,string("patch2,", patchtype,",3,",str21,",",str22,",0.0,",str23,",0.0,",str24,",",str25,",",str26,",",str27,",",str22,",","1e5"))
-                end
-                if patchtype3val==0
+                #else
+                #    if patchtype2val==1
+                #        patchtype="inlet"
+                #    elseif patchtype2val==2
+                #        patchtype="patch"
+                #    elseif patchtype2val==3
+                #        patchtype="outlet"
+                #    end
+                #    push!(lines,string("patch2,", patchtype,",3,",str21,",",str22,",0.0,",str23,",0.0,",str24,",",str25,",",str26,",",str27,",",str22,",","1e5"))
+                #end
+                #if patchtype3val==0
                     push!(notusedsets, "4")
-                else
-                    if patchtype3val==1
-                        patchtype="inlet"
-                    elseif patchtype3val==2
-                        patchtype="patch"
-                    elseif patchtype3val==3
-                        patchtype="outlet"
-                    end
-                    push!(lines,string("patch3,", patchtype,",4,",str31,",",str32,",0.0,",str33,",0.0,",str34,",",str35,",",str36,",",str37,",",str32,",","1e5"))
-                end
-                if patchtype4val==0
+                #else
+                #    if patchtype3val==1
+                #        patchtype="inlet"
+                #    elseif patchtype3val==2
+                #        patchtype="patch"
+                #    elseif patchtype3val==3
+                #        patchtype="outlet"
+                #    end
+                #    push!(lines,string("patch3,", patchtype,",4,",str31,",",str32,",0.0,",str33,",0.0,",str34,",",str35,",",str36,",",str37,",",str32,",","1e5"))
+                #end
+                #if patchtype4val==0
                     push!(notusedsets, "5")
-                else
-                    if patchtype4val==1
-                        patchtype="inlet"
-                    elseif patchtype4val==2
-                        patchtype="patch"
-                    elseif patchtype4val==3
-                        patchtype="outlet"
-                    end
-                    push!(lines,string("patch4,", patchtype,",5,",str41,",",str42,",0.0,",str43,",0.0,",str44,",",str45,",",str46,",",str47,",",str42,",","1e5"))
-                end
+                #else
+                #    if patchtype4val==1
+                #        patchtype="inlet"
+                #    elseif patchtype4val==2
+                #        patchtype="patch"
+                #    elseif patchtype4val==3
+                #        patchtype="outlet"
+                #    end
+                #    push!(lines,string("patch4,", patchtype,",5,",str41,",",str42,",0.0,",str43,",0.0,",str44,",",str45,",",str46,",",str47,",",str42,",","1e5"))
+                #end
             end
             for line in lines
                 println(wfn,line)
@@ -366,6 +372,10 @@ using HDF5
             if isfile(simfile)
                 rm(simfile)
             end
+            if isfile(__psetfile)
+                mv(__psetfile,_psetfile,force=true) 
+            end
+        elseif i_batch==1
             if isfile(__psetfile)
                 mv(__psetfile,_psetfile,force=true) 
             end
@@ -513,6 +523,12 @@ using HDF5
             if isfile(_meshfile)
                 rm(_meshfile)
             end
+            filename_parts=splitpath(meshfile)
+            _psetfile=joinpath( joinpath(filename_parts[1:end-1]) ,"_pset.csv")
+            __psetfile=joinpath( joinpath(filename_parts[1:end-1]) ,"__pset.csv")
+            if isfile(_psetfile)
+                mv(_psetfile,__psetfile,force=true) 
+            end
         else
             partfile = joinpath(mypath,"_part_description.csv")
             writefilename=partfile
@@ -521,7 +537,7 @@ using HDF5
             lines=String[]
             notusedsets = Vector{String}()
             i_model=parse(Int,get_gtk_property(par_0,:text,String))  #2
-            if i_model==1 || i_model==2
+            if i_model==1 || i_model==2 || i_model==3
                 push!(lines,"name,type,part_id,thickness,porosity,porosity_noise,permeability,permeability_noise,alpha,refdir1,refdir2,refdir3,porosity_1,p_1")
                 push!(lines,string("base,base,1,",str11,",",str12,",0.0,",str13,",0.0,",str14,",",str15,",",str16,",",str17,",",str12,",","1e5"))
                 if patchtype1val==0
@@ -648,6 +664,10 @@ using HDF5
             if isfile(simfile)
                 rm(simfile)
             end
+            if isfile(__psetfile)
+                mv(__psetfile,_psetfile,force=true) 
+            end
+        elseif i_batch==1
             if isfile(__psetfile)
                 mv(__psetfile,_psetfile,force=true) 
             end
@@ -785,7 +805,7 @@ using HDF5
         lines=String[]
         notusedsets = Vector{String}()
         i_model=parse(Int,get_gtk_property(par_0,:text,String))  #2
-        if i_model==1 || i_model==2
+        if i_model==1 || i_model==2 || i_model==3
             push!(lines,"name,type,part_id,thickness,porosity,porosity_noise,permeability,permeability_noise,alpha,refdir1,refdir2,refdir3,porosity_1,p_1")
             push!(lines,string("base,base,1,",str11,",",str12,",0.0,",str13,",0.0,",str14,",",str15,",",str16,",",str17,",",str12,",","1e5"))
             if patchtype1val==0
@@ -1090,9 +1110,13 @@ using HDF5
         lines=String[]
         notusedsets = Vector{String}()
         i_model=parse(Int,get_gtk_property(par_0,:text,String))  #2
-        if i_model==1 || i_model==2
+        if i_model==1 || i_model==2 || i_model==3
             push!(lines,"name,type,part_id,thickness,porosity,porosity_noise,permeability,permeability_noise,alpha,refdir1,refdir2,refdir3,porosity_1,p_1")
-            push!(lines,string("base,base,1,",str11,",",str12,",0.0,",str13,",0.0,",str14,",",str15,",",str16,",",str17,",",str12,",","1e5"))
+            if i_model==1 || i_model==2
+                push!(lines,string("base,base,1,",str11,",",str12,",0.0,",str13,",0.0,",str14,",",str15,",",str16,",",str17,",",str12,",","1e5"))
+            elseif i_model==3
+                push!(lines,string("base,base,1,",str11,",",str12,",0.0,",str13,",0.0,",str14,",",str15,",",str16,",",str17,",",str18,",",str19))
+            end
             if patchtype1val==0
                 push!(notusedsets, "2")
             else
@@ -1103,7 +1127,11 @@ using HDF5
                 elseif patchtype1val==3
                     patchtype="outlet"
                 end
-                push!(lines,string("patch1,", patchtype,",2,",str21,",",str22,",0.0,",str23,",0.0,",str24,",",str25,",",str26,",",str27,",",str22,",","1e5"))
+                if i_model==1 || i_model==2
+                    push!(lines,string("patch1,", patchtype,",2,",str21,",",str22,",0.0,",str23,",0.0,",str24,",",str25,",",str26,",",str27,",",str22,",","1e5"))
+                elseif i_model==3
+                    push!(lines,string("patch1,", patchtype,",2,",str21,",",str22,",0.0,",str23,",0.0,",str24,",",str25,",",str26,",",str27,",",str28,",",str29))
+                end
             end
             if patchtype2val==0
                 push!(notusedsets, "3")
@@ -1115,7 +1143,11 @@ using HDF5
                 elseif patchtype2val==3
                     patchtype="outlet"
                 end
-                push!(lines,string("patch2,", patchtype,",3,",str21,",",str22,",0.0,",str23,",0.0,",str24,",",str25,",",str26,",",str27,",",str22,",","1e5"))
+                if i_model==1 || i_model==2
+                    push!(lines,string("patch2,", patchtype,",3,",str31,",",str32,",0.0,",str33,",0.0,",str34,",",str35,",",str36,",",str37,",",str32,",","1e5"))
+                elseif i_model==3
+                    push!(lines,string("patch2,", patchtype,",3,",str31,",",str32,",0.0,",str33,",0.0,",str34,",",str35,",",str36,",",str37,",",str38,",",str38))
+                end
             end
             if patchtype3val==0
                 push!(notusedsets, "4")
@@ -1127,7 +1159,11 @@ using HDF5
                 elseif patchtype3val==3
                     patchtype="outlet"
                 end
-                push!(lines,string("patch3,", patchtype,",4,",str31,",",str32,",0.0,",str33,",0.0,",str34,",",str35,",",str36,",",str37,",",str32,",","1e5"))
+                if i_model==1 || i_model==2
+                    push!(lines,string("patch3,", patchtype,",4,",str41,",",str42,",0.0,",str43,",0.0,",str44,",",str45,",",str46,",",str47,",",str42,",","1e5"))
+                elseif i_model==3
+                    push!(lines,string("patch3,", patchtype,",4,",str41,",",str42,",0.0,",str43,",0.0,",str44,",",str45,",",str46,",",str47,",",str48,",",str48))
+                end
             end
             if patchtype4val==0
                 push!(notusedsets, "5")
@@ -1139,7 +1175,11 @@ using HDF5
                 elseif patchtype4val==3
                     patchtype="outlet"
                 end
-                push!(lines,string("patch4,", patchtype,",5,",str41,",",str42,",0.0,",str43,",0.0,",str44,",",str45,",",str46,",",str47,",",str42,",","1e5"))
+                if i_model==1 || i_model==2
+                    push!(lines,string("patch4,", patchtype,",5,",str51,",",str52,",0.0,",str53,",0.0,",str54,",",str55,",",str56,",",str57,",",str52,",","1e5"))
+                elseif i_model==3
+                    push!(lines,string("patch4,", patchtype,",5,",str51,",",str52,",0.0,",str53,",0.0,",str54,",",str55,",",str56,",",str57,",",str58,",",str59))
+                end
             end
         end
         for line in lines
@@ -1188,7 +1228,7 @@ using HDF5
 
         savepath = mypath   
         t_max = parse(Float64,get_gtk_property(t,:text,String))  #100.
-        t_step = t_max/4
+        t_step = t_max/16
         i_model=parse(Int,get_gtk_property(par_0,:text,String))  #2
         if i_model == 1
             modeltype = LCMsim_v2.model_1
@@ -1239,9 +1279,13 @@ using HDF5
         lines=String[]
         notusedsets = Vector{String}()
         i_model=parse(Int,get_gtk_property(par_0,:text,String))  #2
-        if i_model==1 || i_model==2
+        if i_model==1 || i_model==2 || i_model==3
             push!(lines,"name,type,part_id,thickness,porosity,porosity_noise,permeability,permeability_noise,alpha,refdir1,refdir2,refdir3,porosity_1,p_1")
-            push!(lines,string("base,base,1,",str11,",",str12,",0.0,",str13,",0.0,",str14,",",str15,",",str16,",",str17,",",str12,",","1e5"))
+            if i_model==1 || i_model==2
+                push!(lines,string("base,base,1,",str11,",",str12,",0.0,",str13,",0.0,",str14,",",str15,",",str16,",",str17,",",str12,",","1e5"))
+            elseif i_model==3
+                push!(lines,string("base,base,1,",str11,",",str12,",0.0,",str13,",0.0,",str14,",",str15,",",str16,",",str17,",",str18,",",str19))
+            end
             if patchtype1val==0
                 push!(notusedsets, "2")
             else
@@ -1252,7 +1296,11 @@ using HDF5
                 elseif patchtype1val==3
                     patchtype="outlet"
                 end
-                push!(lines,string("patch1,", patchtype,",2,",str21,",",str22,",0.0,",str23,",0.0,",str24,",",str25,",",str26,",",str27,",",str22,",","1e5"))
+                if i_model==1 || i_model==2
+                    push!(lines,string("patch1,", patchtype,",2,",str21,",",str22,",0.0,",str23,",0.0,",str24,",",str25,",",str26,",",str27,",",str22,",","1e5"))
+                elseif i_model==3
+                    push!(lines,string("patch1,", patchtype,",2,",str21,",",str22,",0.0,",str23,",0.0,",str24,",",str25,",",str26,",",str27,",",str28,",",str29))
+                end
             end
             if patchtype2val==0
                 push!(notusedsets, "3")
@@ -1264,7 +1312,11 @@ using HDF5
                 elseif patchtype2val==3
                     patchtype="outlet"
                 end
-                push!(lines,string("patch2,", patchtype,",3,",str21,",",str22,",0.0,",str23,",0.0,",str24,",",str25,",",str26,",",str27,",",str22,",","1e5"))
+                if i_model==1 || i_model==2
+                    push!(lines,string("patch2,", patchtype,",4,",str31,",",str32,",0.0,",str33,",0.0,",str34,",",str35,",",str36,",",str37,",",str32,",","1e5"))
+                elseif i_model==3
+                    push!(lines,string("patch2,", patchtype,",4,",str31,",",str32,",0.0,",str33,",0.0,",str34,",",str35,",",str36,",",str37,",",str38,",",str39))
+                end
             end
             if patchtype3val==0
                 push!(notusedsets, "4")
@@ -1276,7 +1328,11 @@ using HDF5
                 elseif patchtype3val==3
                     patchtype="outlet"
                 end
-                push!(lines,string("patch3,", patchtype,",4,",str31,",",str32,",0.0,",str33,",0.0,",str34,",",str35,",",str36,",",str37,",",str32,",","1e5"))
+                if i_model==1 || i_model==2
+                    push!(lines,string("patch3,", patchtype,",5,",str41,",",str42,",0.0,",str43,",0.0,",str44,",",str45,",",str46,",",str47,",",str42,",","1e5"))
+                elseif i_model==3
+                    push!(lines,string("patch3,", patchtype,",5,",str41,",",str42,",0.0,",str43,",0.0,",str44,",",str45,",",str46,",",str47,",",str48,",",str49))
+                end
             end
             if patchtype4val==0
                 push!(notusedsets, "5")
@@ -1288,7 +1344,11 @@ using HDF5
                 elseif patchtype4val==3
                     patchtype="outlet"
                 end
-                push!(lines,string("patch4,", patchtype,",5,",str41,",",str42,",0.0,",str43,",0.0,",str44,",",str45,",",str46,",",str47,",",str42,",","1e5"))
+                if i_model==1 || i_model==2
+                    push!(lines,string("patch4,", patchtype,",5,",str51,",",str52,",0.0,",str53,",0.0,",str54,",",str55,",",str56,",",str57,",",str52,",","1e5"))
+                elseif i_model==3
+                    push!(lines,string("patch4,", patchtype,",5,",str51,",",str52,",0.0,",str53,",0.0,",str54,",",str55,",",str56,",",str57,",",str58,",",str59))
+                end
             end
         end
         for line in lines
@@ -1337,7 +1397,7 @@ using HDF5
 
         savepath = mypath   
         t_max = parse(Float64,get_gtk_property(t,:text,String))  #100.
-        t_step = t_max/4
+        t_step = t_max/16
         i_model=parse(Int,get_gtk_property(par_0,:text,String))  #2
         if i_model == 1
             modeltype = LCMsim_v2.model_1
@@ -1390,9 +1450,13 @@ using HDF5
         lines=String[]
         notusedsets = Vector{String}()
         i_model=parse(Int,get_gtk_property(par_0,:text,String))  #2
-        if i_model==1 || i_model==2
+        if i_model==1 || i_model==2 || i_model==3
             push!(lines,"name,type,part_id,thickness,porosity,porosity_noise,permeability,permeability_noise,alpha,refdir1,refdir2,refdir3,porosity_1,p_1")
-            push!(lines,string("base,base,1,",str11,",",str12,",0.0,",str13,",0.0,",str14,",",str15,",",str16,",",str17,",",str12,",","1e5"))
+            if i_model==1 || i_model==2
+                push!(lines,string("base,base,1,",str11,",",str12,",0.0,",str13,",0.0,",str14,",",str15,",",str16,",",str17,",",str12,",","1e5"))
+            elseif i_model==3
+                push!(lines,string("base,base,1,",str11,",",str12,",0.0,",str13,",0.0,",str14,",",str15,",",str16,",",str17,",",str18,",",str19))
+            end
             if patchtype1val==0
                 push!(notusedsets, "2")
             else
@@ -1403,7 +1467,11 @@ using HDF5
                 elseif patchtype1val==3
                     patchtype="outlet"
                 end
-                push!(lines,string("patch1,", patchtype,",2,",str21,",",str22,",0.0,",str23,",0.0,",str24,",",str25,",",str26,",",str27,",",str22,",","1e5"))
+                if i_model==1 || i_model==2
+                    push!(lines,string("patch1,", patchtype,",2,",str21,",",str22,",0.0,",str23,",0.0,",str24,",",str25,",",str26,",",str27,",",str22,",","1e5"))
+                elseif i_model==3
+                    push!(lines,string("patch1,", patchtype,",2,",str21,",",str22,",0.0,",str23,",0.0,",str24,",",str25,",",str26,",",str27,",",str28,",",str29))
+                end
             end
             if patchtype2val==0
                 push!(notusedsets, "3")
@@ -1415,7 +1483,11 @@ using HDF5
                 elseif patchtype2val==3
                     patchtype="outlet"
                 end
-                push!(lines,string("patch2,", patchtype,",3,",str21,",",str22,",0.0,",str23,",0.0,",str24,",",str25,",",str26,",",str27,",",str22,",","1e5"))
+                if i_model==1 || i_model==2
+                    push!(lines,string("patch2,", patchtype,",4,",str31,",",str32,",0.0,",str33,",0.0,",str34,",",str35,",",str36,",",str37,",",str32,",","1e5"))
+                elseif i_model==3
+                    push!(lines,string("patch2,", patchtype,",4,",str31,",",str32,",0.0,",str33,",0.0,",str34,",",str35,",",str36,",",str37,",",str38,",",str39))
+                end
             end
             if patchtype3val==0
                 push!(notusedsets, "4")
@@ -1427,7 +1499,11 @@ using HDF5
                 elseif patchtype3val==3
                     patchtype="outlet"
                 end
-                push!(lines,string("patch3,", patchtype,",4,",str31,",",str32,",0.0,",str33,",0.0,",str34,",",str35,",",str36,",",str37,",",str32,",","1e5"))
+                if i_model==1 || i_model==2
+                    push!(lines,string("patch3,", patchtype,",5,",str41,",",str42,",0.0,",str43,",0.0,",str44,",",str45,",",str46,",",str47,",",str42,",","1e5"))
+                elseif i_model==3
+                    push!(lines,string("patch3,", patchtype,",5,",str41,",",str42,",0.0,",str43,",0.0,",str44,",",str45,",",str46,",",str47,",",str48,",",str49))
+                end
             end
             if patchtype4val==0
                 push!(notusedsets, "5")
@@ -1439,9 +1515,17 @@ using HDF5
                 elseif patchtype4val==3
                     patchtype="outlet"
                 end
-                push!(lines,string("patch4,", patchtype,",5,",str41,",",str42,",0.0,",str43,",0.0,",str44,",",str45,",",str46,",",str47,",",str42,",","1e5"))
+                if i_model==1 || i_model==2
+                    push!(lines,string("patch4,", patchtype,",5,",str51,",",str52,",0.0,",str53,",0.0,",str54,",",str55,",",str56,",",str57,",",str52,",","1e5"))
+                elseif i_model==3
+                    push!(lines,string("patch4,", patchtype,",5,",str51,",",str52,",0.0,",str53,",0.0,",str54,",",str55,",",str56,",",str57,",",str58,",",str59))
+                end
             end
-            push!(lines,string("interactive_inlet,inlet,6,",str11,",",str12,",0.0,",str13,",0.0,",str14,",",str15,",",str16,",",str17,",",str12,",","1e5"))
+            if i_model==1 || i_model==2
+                push!(lines,string("interactive_inlet,inlet,6,",str11,",",str12,",0.0,",str13,",0.0,",str14,",",str15,",",str16,",",str17,",",str12,",","1e5"))
+            elseif i_model==3
+                push!(lines,string("interactive_inlet,inlet,6,",str11,",",str12,",0.0,",str13,",0.0,",str14,",",str15,",",str16,",",str17,",",str18,",",str19))
+            end
         end
         for line in lines
             println(wfn,line)
@@ -1489,7 +1573,7 @@ using HDF5
 
         savepath = mypath   
         t_max = parse(Float64,get_gtk_property(t,:text,String))  #100.
-        t_step = t_max/4
+        t_step = t_max/16
         i_model=parse(Int,get_gtk_property(par_0,:text,String))  #2
         if i_model == 1
             modeltype = LCMsim_v2.model_1
@@ -1534,9 +1618,13 @@ using HDF5
         lines=String[]
         notusedsets = Vector{String}()
         i_model=parse(Int,get_gtk_property(par_0,:text,String))  #2
-        if i_model==1 || i_model==2
+        if i_model==1 || i_model==2 || i_model==3
             push!(lines,"name,type,part_id,thickness,porosity,porosity_noise,permeability,permeability_noise,alpha,refdir1,refdir2,refdir3,porosity_1,p_1")
-            push!(lines,string("base,base,1,",str11,",",str12,",0.0,",str13,",0.0,",str14,",",str15,",",str16,",",str17,",",str12,",","1e5"))
+            if i_model==1 || i_model==2
+                push!(lines,string("base,base,1,",str11,",",str12,",0.0,",str13,",0.0,",str14,",",str15,",",str16,",",str17,",",str12,",","1e5"))
+            elseif i_model==3
+                push!(lines,string("base,base,1,",str11,",",str12,",0.0,",str13,",0.0,",str14,",",str15,",",str16,",",str17,",",str18,",",str19))
+            end
             if patchtype1val==0
                 push!(notusedsets, "2")
             else
@@ -1547,7 +1635,11 @@ using HDF5
                 elseif patchtype1val==3
                     patchtype="outlet"
                 end
-                push!(lines,string("patch1,", patchtype,",2,",str21,",",str22,",0.0,",str23,",0.0,",str24,",",str25,",",str26,",",str27,",",str22,",","1e5"))
+                if i_model==1 || i_model==2
+                    push!(lines,string("patch1,", patchtype,",2,",str21,",",str22,",0.0,",str23,",0.0,",str24,",",str25,",",str26,",",str27,",",str22,",","1e5"))
+                elseif i_model==3
+                    push!(lines,string("patch1,", patchtype,",2,",str21,",",str22,",0.0,",str23,",0.0,",str24,",",str25,",",str26,",",str27,",",str28,",",str29))
+                end
             end
             if patchtype2val==0
                 push!(notusedsets, "3")
@@ -1559,7 +1651,11 @@ using HDF5
                 elseif patchtype2val==3
                     patchtype="outlet"
                 end
-                push!(lines,string("patch2,", patchtype,",3,",str21,",",str22,",0.0,",str23,",0.0,",str24,",",str25,",",str26,",",str27,",",str22,",","1e5"))
+                if i_model==1 || i_model==2
+                    push!(lines,string("patch2,", patchtype,",4,",str31,",",str32,",0.0,",str33,",0.0,",str34,",",str35,",",str36,",",str37,",",str32,",","1e5"))
+                elseif i_model==3
+                    push!(lines,string("patch2,", patchtype,",4,",str31,",",str32,",0.0,",str33,",0.0,",str34,",",str35,",",str36,",",str37,",",str38,",",str39))
+                end
             end
             if patchtype3val==0
                 push!(notusedsets, "4")
@@ -1571,7 +1667,11 @@ using HDF5
                 elseif patchtype3val==3
                     patchtype="outlet"
                 end
-                push!(lines,string("patch3,", patchtype,",4,",str31,",",str32,",0.0,",str33,",0.0,",str34,",",str35,",",str36,",",str37,",",str32,",","1e5"))
+                if i_model==1 || i_model==2
+                    push!(lines,string("patch3,", patchtype,",5,",str41,",",str42,",0.0,",str43,",0.0,",str44,",",str45,",",str46,",",str47,",",str42,",","1e5"))
+                elseif i_model==3
+                    push!(lines,string("patch3,", patchtype,",5,",str41,",",str42,",0.0,",str43,",0.0,",str44,",",str45,",",str46,",",str47,",",str48,",",str49))
+                end
             end
             if patchtype4val==0
                 push!(notusedsets, "5")
@@ -1583,9 +1683,17 @@ using HDF5
                 elseif patchtype4val==3
                     patchtype="outlet"
                 end
-                push!(lines,string("patch4,", patchtype,",5,",str41,",",str42,",0.0,",str43,",0.0,",str44,",",str45,",",str46,",",str47,",",str42,",","1e5"))
+                if i_model==1 || i_model==2
+                    push!(lines,string("patch4,", patchtype,",5,",str51,",",str52,",0.0,",str53,",0.0,",str54,",",str55,",",str56,",",str57,",",str52,",","1e5"))
+                elseif i_model==3
+                    push!(lines,string("patch4,", patchtype,",5,",str51,",",str52,",0.0,",str53,",0.0,",str54,",",str55,",",str56,",",str57,",",str58,",",str59))
+                end
             end
-            push!(lines,string("interactive_inlet,inlet,6,",str11,",",str12,",0.0,",str13,",0.0,",str14,",",str15,",",str16,",",str17,",",str12,",","1e5"))
+            if i_model==1 || i_model==2
+                push!(lines,string("interactive_inlet,inlet,6,",str11,",",str12,",0.0,",str13,",0.0,",str14,",",str15,",",str16,",",str17,",",str12,",","1e5"))
+            elseif i_model==3
+                push!(lines,string("interactive_inlet,inlet,6,",str11,",",str12,",0.0,",str13,",0.0,",str14,",",str15,",",str16,",",str17,",",str18,",",str19))
+            end
         end
         for line in lines
             println(wfn,line)
@@ -1633,7 +1741,7 @@ using HDF5
 
         savepath = mypath   
         t_max = parse(Float64,get_gtk_property(t,:text,String))  #100.
-        t_step = t_max/4
+        t_step = t_max/16
         i_model=parse(Int,get_gtk_property(par_0,:text,String))  #2
         if i_model == 1
             modeltype = LCMsim_v2.model_1
@@ -1768,20 +1876,24 @@ using HDF5
             if i_var==1
                 gammas = [read_dataset(meshfile["/" * state], "gamma") for state in states]
                 ax1.title="Filling factor"
+                p1=poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:length(xvec), TriangleFace); color=cgammavec[:], strokewidth=1,colorrange=(0,1))
             elseif i_var==2
                 gammas = [read_dataset(meshfile["/" * state], "p") for state in states]
                 ax1.title="Pressure"
+                p1=poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:length(xvec), TriangleFace); color=cgammavec[:], strokewidth=1)  #, colorrange=(0,1))
             elseif i_var==3
                 gammas = [read_dataset(meshfile["/" * state], "rho") for state in states]
                 ax1.title="Mass density"
+                p1=poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:length(xvec), TriangleFace); color=cgammavec[:], strokewidth=1)  #, colorrange=(0,1))
             elseif i_var==4
                 gammas = [read_dataset(meshfile["/" * state], "u") for state in states]
-                ax1.title="Velocity componente u"
+                ax1.title="Velocity component u"
+                p1=poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:length(xvec), TriangleFace); color=cgammavec[:], strokewidth=1)  #, colorrange=(0,1))
             elseif i_var==5
                 gammas = [read_dataset(meshfile["/" * state], "v") for state in states]
-                ax1.title="Velocity componente v"
-            end
-            p1=poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:length(xvec), TriangleFace); color=cgammavec[:], strokewidth=1)  #, colorrange=(0,1))
+                ax1.title="Velocity component v"
+                p1=poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:length(xvec), TriangleFace); color=cgammavec[:], strokewidth=1)  #, colorrange=(0,1))
+            end            
             hidedecorations!(ax1);
             hidespines!(ax1) 
 
@@ -1883,7 +1995,7 @@ using HDF5
             az=(deltaz+eps_delta)/(mindelta+eps_delta)
         
         
-            time1=times[1]
+            time1=times[4]
             time4=times[end]
             time2=time1+(time4-time1)/3*1
             time3=time1+(time4-time1)/3*2
@@ -1901,16 +2013,16 @@ using HDF5
             resolution_val=300;
             fig = Figure(size=(4*resolution_val, resolution_val))
             ax1 = Axis3(fig[1, 1]; aspect=(ax,ay,az), perspectiveness=0.5,viewmode = :fitzoom,title=string("Filling factor at t=", string(round(time1)) ,"s"))
-            p1=poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:length(xvec), TriangleFace); color=cgammavec1[:], strokewidth=1)  
+            p1=poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:length(xvec), TriangleFace); color=cgammavec1[:], strokewidth=1,colorrange=(0,1))  
             hidedecorations!(ax1); hidespines!(ax1) 
             ax1 = Axis3(fig[1, 2]; aspect=(ax,ay,az), perspectiveness=0.5,viewmode = :fitzoom,title=string("Filling factor at t=", string(round(time2)) ,"s"))
-            p1=poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:length(xvec), TriangleFace); color=cgammavec2[:], strokewidth=1)  
+            p1=poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:length(xvec), TriangleFace); color=cgammavec2[:], strokewidth=1,colorrange=(0,1))  
             hidedecorations!(ax1); hidespines!(ax1) 
             ax1 = Axis3(fig[1, 3]; aspect=(ax,ay,az), perspectiveness=0.5,viewmode = :fitzoom,title=string("Filling factor at t=", string(round(time3)) ,"s"))
-            p1=poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:length(xvec), TriangleFace); color=cgammavec3[:], strokewidth=1)  
+            p1=poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:length(xvec), TriangleFace); color=cgammavec3[:], strokewidth=1,colorrange=(0,1))  
             hidedecorations!(ax1); hidespines!(ax1) 
             ax1 = Axis3(fig[1, 4]; aspect=(ax,ay,az), perspectiveness=0.5,viewmode = :fitzoom,title=string("Filling factor at t=", string(round(time4)) ,"s"))
-            p1=poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:length(xvec), TriangleFace); color=cgammavec4[:], strokewidth=1)  
+            p1=poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:length(xvec), TriangleFace); color=cgammavec4[:], strokewidth=1,colorrange=(0,1))  
             hidedecorations!(ax1); hidespines!(ax1) 
         
             display(fig)
@@ -2009,19 +2121,55 @@ using HDF5
         
         
             time1=times[1]
-            time4=times[end]
-            time2=time1+(time4-time1)/3*1
-            time3=time1+(time4-time1)/3*2
+            time16=times[end]
+            time2=time1+(time16-time1)/15*1
+            time3=time1+(time16-time1)/15*2
+            time4=time1+(time16-time1)/15*3
+            time5=time1+(time16-time1)/15*4
+            time6=time1+(time16-time1)/15*5
+            time7=time1+(time16-time1)/15*6
+            time8=time1+(time16-time1)/15*7
+            time9=time1+(time16-time1)/15*8
+            time10=time1+(time16-time1)/15*9
+            time11=time1+(time16-time1)/15*10
+            time12=time1+(time16-time1)/15*11
+            time13=time1+(time16-time1)/15*12
+            time14=time1+(time16-time1)/15*13
+            time15=time1+(time16-time1)/15*14
         
             ind1=1
             (val2, ind2)=findmin(abs.(times.-time2))
             (val3, ind3)=findmin(abs.(times.-time3)) 
-            ind4=length(times)
+            (val4, ind4)=findmin(abs.(times.-time4))
+            (val5, ind5)=findmin(abs.(times.-time5)) 
+            (val6, ind6)=findmin(abs.(times.-time6))
+            (val7, ind7)=findmin(abs.(times.-time7)) 
+            (val8, ind8)=findmin(abs.(times.-time8))
+            (val9, ind9)=findmin(abs.(times.-time9)) 
+            (val10, ind10)=findmin(abs.(times.-time10))
+            (val11, ind11)=findmin(abs.(times.-time11)) 
+            (val12, ind12)=findmin(abs.(times.-time12))
+            (val13, ind13)=findmin(abs.(times.-time13)) 
+            (val14, ind14)=findmin(abs.(times.-time14))
+            (val15, ind15)=findmin(abs.(times.-time15)) 
+            ind16=length(times)
         
             cgammavec1=cgammasvec[:,:,ind1]
             cgammavec2=cgammasvec[:,:,ind2]
             cgammavec3=cgammasvec[:,:,ind3]
             cgammavec4=cgammasvec[:,:,ind4]
+            cgammavec5=cgammasvec[:,:,ind5]
+            cgammavec6=cgammasvec[:,:,ind6]
+            cgammavec7=cgammasvec[:,:,ind7]
+            cgammavec8=cgammasvec[:,:,ind8]
+            cgammavec9=cgammasvec[:,:,ind9]
+            cgammavec10=cgammasvec[:,:,ind10]
+            cgammavec11=cgammasvec[:,:,ind11]
+            cgammavec12=cgammasvec[:,:,ind12]
+            cgammavec13=cgammasvec[:,:,ind13]
+            cgammavec14=cgammasvec[:,:,ind14]
+            cgammavec15=cgammasvec[:,:,ind15]
+            cgammavec16=cgammasvec[:,:,ind16]                                    
         
             time_vector=times
             n_pics=length(time_vector)
@@ -2044,13 +2192,37 @@ using HDF5
                 
                 empty!(ax1)  #empty!(ax1.scene)
                 if tind==1;
-                    p1=poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:length(xvec), TriangleFace); color=cgammavec1[:], strokewidth=1)  
+                    p1=poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:length(xvec), TriangleFace); color=cgammavec1[:], strokewidth=1,colorrange=(0,1))  
                 elseif tind==2;
-                    p1=poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:length(xvec), TriangleFace); color=cgammavec2[:], strokewidth=1)  
+                    p1=poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:length(xvec), TriangleFace); color=cgammavec2[:], strokewidth=1,colorrange=(0,1))  
                 elseif tind==3;
-                    p1=poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:length(xvec), TriangleFace); color=cgammavec3[:], strokewidth=1)  
+                    p1=poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:length(xvec), TriangleFace); color=cgammavec3[:], strokewidth=1,colorrange=(0,1))  
                 elseif tind==4;
-                    p1=poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:length(xvec), TriangleFace); color=cgammavec4[:], strokewidth=1)  
+                    p1=poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:length(xvec), TriangleFace); color=cgammavec4[:], strokewidth=1,colorrange=(0,1))  
+                elseif tind==5;
+                    p1=poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:length(xvec), TriangleFace); color=cgammavec5[:], strokewidth=1,colorrange=(0,1))  
+                elseif tind==6;
+                    p1=poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:length(xvec), TriangleFace); color=cgammavec6[:], strokewidth=1,colorrange=(0,1))  
+                elseif tind==7;
+                    p1=poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:length(xvec), TriangleFace); color=cgammavec7[:], strokewidth=1,colorrange=(0,1))  
+                elseif tind==8;
+                    p1=poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:length(xvec), TriangleFace); color=cgammavec8[:], strokewidth=1,colorrange=(0,1))  
+                elseif tind==9;
+                    p1=poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:length(xvec), TriangleFace); color=cgammavec9[:], strokewidth=1,colorrange=(0,1))  
+                elseif tind==10;
+                    p1=poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:length(xvec), TriangleFace); color=cgammavec10[:], strokewidth=1,colorrange=(0,1))  
+                elseif tind==11;
+                    p1=poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:length(xvec), TriangleFace); color=cgammavec11[:], strokewidth=1,colorrange=(0,1))  
+                elseif tind==12;
+                    p1=poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:length(xvec), TriangleFace); color=cgammavec12[:], strokewidth=1,colorrange=(0,1))  
+                elseif tind==13;
+                    p1=poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:length(xvec), TriangleFace); color=cgammavec13[:], strokewidth=1,colorrange=(0,1))  
+                elseif tind==14;
+                    p1=poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:length(xvec), TriangleFace); color=cgammavec14[:], strokewidth=1,colorrange=(0,1))  
+                elseif tind==15;
+                    p1=poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:length(xvec), TriangleFace); color=cgammavec15[:], strokewidth=1,colorrange=(0,1))  
+                elseif tind==16;
+                    p1=poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:length(xvec), TriangleFace); color=cgammavec16[:], strokewidth=1,colorrange=(0,1))  
                 end
                 ax1.title=string("Filling factor at t=", string(round(time_vector[tind])) ,"s")
                     
@@ -2085,7 +2257,7 @@ using HDF5
         partfile = get_gtk_property(in2,:text,String)
         simfile = get_gtk_property(in2a,:text,String) 
         t_max = parse(Float64,get_gtk_property(t,:text,String))  #100.
-        t_step = t_max/4
+        t_step = t_max/16
         i_model=parse(Int,get_gtk_property(par_0,:text,String))  #2
         if i_model == 1
             modeltype = LCMsim_v2.model_1
