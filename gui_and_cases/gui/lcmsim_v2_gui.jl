@@ -1397,7 +1397,6 @@ using HDF5
 
         savepath = mypath   
         t_max = parse(Float64,get_gtk_property(t,:text,String))  #100.
-        t_step = t_max/16
         i_model=parse(Int,get_gtk_property(par_0,:text,String))  #2
         if i_model == 1
             modeltype = LCMsim_v2.model_1
@@ -1414,7 +1413,7 @@ using HDF5
         end
 
         sourcepath=joinpath(savepath,"data.jld2")
-        output_intervals=4
+        output_intervals=16
         LCMsim_v2.continue_and_solve(sourcepath,savepath,meshfile,partfile,simfile,modeltype,t_max,output_intervals,LCMsim_v2.verbose,true,true)
         
         if isfile(_meshfile)
@@ -1741,7 +1740,6 @@ using HDF5
 
         savepath = mypath   
         t_max = parse(Float64,get_gtk_property(t,:text,String))  #100.
-        t_step = t_max/16
         i_model=parse(Int,get_gtk_property(par_0,:text,String))  #2
         if i_model == 1
             modeltype = LCMsim_v2.model_1
@@ -1752,7 +1750,7 @@ using HDF5
         end  
 
         sourcepath=joinpath(savepath,"data.jld2")
-        output_intervals=4
+        output_intervals=16
         LCMsim_v2.continue_and_solve(sourcepath,savepath,meshfile,partfile,simfile,modeltype,t_max,output_intervals,LCMsim_v2.verbose,true,true)
         
         if isfile(_meshfile)
