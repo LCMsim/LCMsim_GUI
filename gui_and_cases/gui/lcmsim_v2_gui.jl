@@ -1764,10 +1764,11 @@ using HDF5
         end
     end
     function pr_clicked(w)
+        i_model=parse(Int,get_gtk_property(par_0,:text,String))
         i_var_in=parse(Int,get_gtk_property(pr1,:text,String)); 
 
-        #coloring of mesh: 1..gamma, 2..p, 3..rho, 4..u, 5..v
-        if i_var_in>=1 && i_var_in<=5
+        #coloring of mesh: 1..gamma, 2..p, 3..rho, 4..sqrt(u^2+v^2)
+        if i_var_in>=1 && i_var_in<=4
             i_var=i_var_in
         else
             i_var=1
@@ -1821,8 +1822,13 @@ using HDF5
                 gammas = [read_dataset(meshfile["/" * state], "rho") for state in states]
             elseif i_var==4
                 gammas = [read_dataset(meshfile["/" * state], "u") for state in states]
-            elseif i_var==5
-                gammas = [read_dataset(meshfile["/" * state], "v") for state in states]
+                gammas1 = [read_dataset(meshfile["/" * state], "u") for state in states]
+                gammas2 = [read_dataset(meshfile["/" * state], "v") for state in states]
+                for tid in 1:length(gammas1)
+                    for cid in 1:N
+                        gammas[tid][cid]=sqrt( gammas1[tid][cid]^2 + gammas2[tid][cid]^2 )
+                    end
+                end
             end
             #gammas = [read_dataset(meshfile["/" * state], "p") for state in states]
 
@@ -1872,24 +1878,16 @@ using HDF5
 
             ax1 = Axis3(fig[1, 1]; aspect=(ax,ay,az), perspectiveness=0.5,viewmode = :fitzoom)
             if i_var==1
-                gammas = [read_dataset(meshfile["/" * state], "gamma") for state in states]
                 ax1.title="Filling factor"
                 p1=poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:length(xvec), TriangleFace); color=cgammavec[:], strokewidth=1,colorrange=(0,1))
             elseif i_var==2
-                gammas = [read_dataset(meshfile["/" * state], "p") for state in states]
                 ax1.title="Pressure"
                 p1=poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:length(xvec), TriangleFace); color=cgammavec[:], strokewidth=1)  #, colorrange=(0,1))
             elseif i_var==3
-                gammas = [read_dataset(meshfile["/" * state], "rho") for state in states]
                 ax1.title="Mass density"
                 p1=poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:length(xvec), TriangleFace); color=cgammavec[:], strokewidth=1)  #, colorrange=(0,1))
             elseif i_var==4
-                gammas = [read_dataset(meshfile["/" * state], "u") for state in states]
-                ax1.title="Velocity component u"
-                p1=poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:length(xvec), TriangleFace); color=cgammavec[:], strokewidth=1)  #, colorrange=(0,1))
-            elseif i_var==5
-                gammas = [read_dataset(meshfile["/" * state], "v") for state in states]
-                ax1.title="Velocity component v"
+                ax1.title="Velocity magnitude"
                 p1=poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:length(xvec), TriangleFace); color=cgammavec[:], strokewidth=1)  #, colorrange=(0,1))
             end            
             hidedecorations!(ax1);
@@ -1902,6 +1900,7 @@ using HDF5
 
     end
     function po_clicked(w)
+        i_model=parse(Int,get_gtk_property(par_0,:text,String))
         savepath = mypath
         GLMakie.activate!()
 
@@ -1940,7 +1939,7 @@ using HDF5
             states = filter(s -> s[1:3] == "sta", states)
             
             gammas = [read_dataset(meshfile["/" * state], "gamma") for state in states]
-            gamma = read_dataset(meshfile["properties"], "part_id")
+            gamma = read_dataset(meshfile["properties"], "type")
         
             cgammasvec=Array{Float64}(undef, 3, N,length(gammas))
             cgammasvec_bw=Array{Float64}(undef, 3, N,length(gammas))
@@ -1948,15 +1947,15 @@ using HDF5
                 for cid in 1:N
                     for j in 1:3
                         cgammasvec[j,cid,tid]=gammas[tid][cid]
-        
-                        #if cgammasvec[j,cid,tid]>=960;
-                        #    cgammasvec[j,cid,tid]=960
-                        #end
-        
-                        if cgammasvec[j,cid,tid]>=0.8;
-                            cgammasvec_bw[j,cid,tid]=1.0
-                        else
-                            cgammasvec_bw[j,cid,tid]=0.0
+                        if gamma[cid]==-1 || gamma[cid]==-2;  #different color for inlet and outlet
+                            cgammasvec[j,cid,tid]=0.95
+                        end
+                        if i_model==1
+                            if cgammasvec[j,cid,tid]>=0.8;
+                                cgammasvec[j,cid,tid]=1.0
+                            else
+                                cgammasvec[j,cid,tid]=0.0
+                            end
                         end
                     end
                 end
@@ -1993,16 +1992,16 @@ using HDF5
             az=(deltaz+eps_delta)/(mindelta+eps_delta)
         
         
-            time1=times[4]
-            time4=times[end]
-            time2=time1+(time4-time1)/3*1
-            time3=time1+(time4-time1)/3*2
-        
-            ind1=1
-            (val2, ind2)=findmin(abs.(times.-time2))
-            (val3, ind3)=findmin(abs.(times.-time3)) 
             ind4=length(times)
-        
+            ind3=ind4-4
+            ind2=ind4-8
+            ind1=ind4-12
+
+            time1=times[ind1]
+            time2=times[ind2]
+            time3=times[ind3]
+            time4=times[ind4]
+
             cgammavec1=cgammasvec[:,:,ind1]
             cgammavec2=cgammasvec[:,:,ind2]
             cgammavec3=cgammasvec[:,:,ind3]
@@ -2027,6 +2026,7 @@ using HDF5
         end
     end
     function pf_clicked(w)
+        i_model=parse(Int,get_gtk_property(par_0,:text,String))
         savepath = mypath
         GLMakie.activate!()
 
@@ -2065,7 +2065,7 @@ using HDF5
             states = filter(s -> s[1:3] == "sta", states)
             
             gammas = [read_dataset(meshfile["/" * state], "gamma") for state in states]
-            gamma = read_dataset(meshfile["properties"], "part_id")
+            gamma = read_dataset(meshfile["properties"], "type")
         
             cgammasvec=Array{Float64}(undef, 3, N,length(gammas))
             cgammasvec_bw=Array{Float64}(undef, 3, N,length(gammas))
@@ -2073,15 +2073,15 @@ using HDF5
                 for cid in 1:N
                     for j in 1:3
                         cgammasvec[j,cid,tid]=gammas[tid][cid]
-        
-                        #if cgammasvec[j,cid,tid]>=960;
-                        #    cgammasvec[j,cid,tid]=960
-                        #end
-        
-                        if cgammasvec[j,cid,tid]>=0.8;
-                            cgammasvec_bw[j,cid,tid]=1.0
-                        else
-                            cgammasvec_bw[j,cid,tid]=0.0
+                        if gamma[cid]==-1 || gamma[cid]==-2;  #different color for inlet and outlet
+                            cgammasvec[j,cid,tid]=0.95
+                        end
+                        if i_model==1
+                            if cgammasvec[j,cid,tid]>=0.8;
+                                cgammasvec[j,cid,tid]=1.0
+                            else
+                                cgammasvec[j,cid,tid]=0.0
+                            end
                         end
                     end
                 end
@@ -2089,18 +2089,7 @@ using HDF5
             cgammavec=cgammasvec[:,:,length(gammas)]
             cgammavec_bw=cgammasvec_bw[:,:,length(gammas)]
         
-            cgammavec1=cgammasvec[:,:,length(gammas)]
-            cgammavec2=cgammasvec[:,:,length(gammas)]
-            cgammavec3=cgammasvec[:,:,length(gammas)]
-            cgammavec4=cgammasvec[:,:,length(gammas)]
-        
             times = [read_attribute(meshfile["/" * state], "t") for state in states]
-        
-        
-            time1=Float64(0.0)
-            time2=Float64(0.0)
-            time3=Float64(0.0)
-            time4=Float64(0.0)
         
             #bounding box
             deltax=maximum(xvec)-minimum(xvec)
@@ -2117,41 +2106,47 @@ using HDF5
             ay=(deltay+eps_delta)/(mindelta+eps_delta)
             az=(deltaz+eps_delta)/(mindelta+eps_delta)
         
-        
-            time1=times[1]
-            time16=times[end]
-            time2=time1+(time16-time1)/15*1
-            time3=time1+(time16-time1)/15*2
-            time4=time1+(time16-time1)/15*3
-            time5=time1+(time16-time1)/15*4
-            time6=time1+(time16-time1)/15*5
-            time7=time1+(time16-time1)/15*6
-            time8=time1+(time16-time1)/15*7
-            time9=time1+(time16-time1)/15*8
-            time10=time1+(time16-time1)/15*9
-            time11=time1+(time16-time1)/15*10
-            time12=time1+(time16-time1)/15*11
-            time13=time1+(time16-time1)/15*12
-            time14=time1+(time16-time1)/15*13
-            time15=time1+(time16-time1)/15*14
-        
-            ind1=1
-            (val2, ind2)=findmin(abs.(times.-time2))
-            (val3, ind3)=findmin(abs.(times.-time3)) 
-            (val4, ind4)=findmin(abs.(times.-time4))
-            (val5, ind5)=findmin(abs.(times.-time5)) 
-            (val6, ind6)=findmin(abs.(times.-time6))
-            (val7, ind7)=findmin(abs.(times.-time7)) 
-            (val8, ind8)=findmin(abs.(times.-time8))
-            (val9, ind9)=findmin(abs.(times.-time9)) 
-            (val10, ind10)=findmin(abs.(times.-time10))
-            (val11, ind11)=findmin(abs.(times.-time11)) 
-            (val12, ind12)=findmin(abs.(times.-time12))
-            (val13, ind13)=findmin(abs.(times.-time13)) 
-            (val14, ind14)=findmin(abs.(times.-time14))
-            (val15, ind15)=findmin(abs.(times.-time15)) 
             ind16=length(times)
-        
+            ind15=ind16-1
+            ind14=ind16-2
+            ind13=ind16-3
+            ind12=ind16-4
+            ind11=ind16-5
+            ind10=ind16-6
+            ind9=ind16-7
+            ind8=ind16-8
+            ind7=ind16-9
+            ind6=ind16-10
+            ind5=ind16-11
+            ind4=ind16-12
+            ind3=ind16-13
+            ind2=ind16-14
+            ind1=ind16-15
+            ind0=ind16-16
+
+            if ind0>=1
+                time0=times[ind0]
+            end
+            time1=times[ind1]
+            time2=times[ind2]
+            time3=times[ind3]
+            time4=times[ind4]
+            time5=times[ind5]
+            time6=times[ind6]
+            time7=times[ind7]
+            time8=times[ind8]
+            time9=times[ind9]
+            time10=times[ind10]
+            time11=times[ind11]
+            time12=times[ind12]
+            time13=times[ind13]
+            time14=times[ind14]
+            time15=times[ind15]
+            time16=times[ind16]
+
+            if ind0>=1
+                cgammavec0=cgammavec[:,:,ind0]
+            end
             cgammavec1=cgammasvec[:,:,ind1]
             cgammavec2=cgammasvec[:,:,ind2]
             cgammavec3=cgammasvec[:,:,ind3]
@@ -2167,13 +2162,16 @@ using HDF5
             cgammavec13=cgammasvec[:,:,ind13]
             cgammavec14=cgammasvec[:,:,ind14]
             cgammavec15=cgammasvec[:,:,ind15]
-            cgammavec16=cgammasvec[:,:,ind16]                                    
+            cgammavec16=cgammasvec[:,:,ind16]    
         
-            time_vector=times
+            if ind0>=1
+                time_vector=times[ind0:ind16]
+                cgammavec0=cgammasvec[:,:,ind0]
+            else
+                time_vector=times[ind1:ind16]
+            end
             n_pics=length(time_vector)
-            cgammavec1=cgammasvec[:,:,ind1]
-        
-        
+
             resolution_val=800
             fig = Figure(size=(resolution_val, resolution_val))   
             ax1 = Axis3(fig[1, 1]; aspect=(ax,ay,az), perspectiveness=0.5,viewmode = :fitzoom,title=string("Filling factor at t=", string(round(time_vector[1])) ,"s"))
@@ -2181,49 +2179,86 @@ using HDF5
             hidedecorations!(ax1)
             hidespines!(ax1) 
             sl_t = Slider(fig[2, 1], range = time_vector[1]:  (time_vector[end]-time_vector[1])/(n_pics-1) :time_vector[end], startvalue =  time_vector[1] )
-            
-        
+
             point = lift(sl_t.value) do x    
                 time_val=x
                 (tval, tind)=findmin(abs.(time_vector.-x))
                 time_val=time_vector[tind]
                 
                 empty!(ax1)  #empty!(ax1.scene)
-                if tind==1;
-                    p1=poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:length(xvec), TriangleFace); color=cgammavec1[:], strokewidth=1,colorrange=(0,1))  
-                elseif tind==2;
-                    p1=poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:length(xvec), TriangleFace); color=cgammavec2[:], strokewidth=1,colorrange=(0,1))  
-                elseif tind==3;
-                    p1=poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:length(xvec), TriangleFace); color=cgammavec3[:], strokewidth=1,colorrange=(0,1))  
-                elseif tind==4;
-                    p1=poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:length(xvec), TriangleFace); color=cgammavec4[:], strokewidth=1,colorrange=(0,1))  
-                elseif tind==5;
-                    p1=poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:length(xvec), TriangleFace); color=cgammavec5[:], strokewidth=1,colorrange=(0,1))  
-                elseif tind==6;
-                    p1=poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:length(xvec), TriangleFace); color=cgammavec6[:], strokewidth=1,colorrange=(0,1))  
-                elseif tind==7;
-                    p1=poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:length(xvec), TriangleFace); color=cgammavec7[:], strokewidth=1,colorrange=(0,1))  
-                elseif tind==8;
-                    p1=poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:length(xvec), TriangleFace); color=cgammavec8[:], strokewidth=1,colorrange=(0,1))  
-                elseif tind==9;
-                    p1=poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:length(xvec), TriangleFace); color=cgammavec9[:], strokewidth=1,colorrange=(0,1))  
-                elseif tind==10;
-                    p1=poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:length(xvec), TriangleFace); color=cgammavec10[:], strokewidth=1,colorrange=(0,1))  
-                elseif tind==11;
-                    p1=poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:length(xvec), TriangleFace); color=cgammavec11[:], strokewidth=1,colorrange=(0,1))  
-                elseif tind==12;
-                    p1=poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:length(xvec), TriangleFace); color=cgammavec12[:], strokewidth=1,colorrange=(0,1))  
-                elseif tind==13;
-                    p1=poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:length(xvec), TriangleFace); color=cgammavec13[:], strokewidth=1,colorrange=(0,1))  
-                elseif tind==14;
-                    p1=poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:length(xvec), TriangleFace); color=cgammavec14[:], strokewidth=1,colorrange=(0,1))  
-                elseif tind==15;
-                    p1=poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:length(xvec), TriangleFace); color=cgammavec15[:], strokewidth=1,colorrange=(0,1))  
-                elseif tind==16;
-                    p1=poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:length(xvec), TriangleFace); color=cgammavec16[:], strokewidth=1,colorrange=(0,1))  
+                #von oben runten und mit else tind==0??
+                len=length(time_vector)
+                if tind==len
+                    p1=poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:length(xvec), TriangleFace); color=cgammavec16[:], strokewidth=1,colorrange=(0,1)) 
+                elseif tind==len-1
+                    p1=poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:length(xvec), TriangleFace); color=cgammavec15[:], strokewidth=1,colorrange=(0,1)) 
+                elseif tind==len-2
+                    p1=poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:length(xvec), TriangleFace); color=cgammavec14[:], strokewidth=1,colorrange=(0,1)) 
+                elseif tind==len-3
+                    p1=poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:length(xvec), TriangleFace); color=cgammavec13[:], strokewidth=1,colorrange=(0,1)) 
+                elseif tind==len-4
+                    p1=poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:length(xvec), TriangleFace); color=cgammavec12[:], strokewidth=1,colorrange=(0,1)) 
+                elseif tind==len-5
+                    p1=poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:length(xvec), TriangleFace); color=cgammavec11[:], strokewidth=1,colorrange=(0,1)) 
+                elseif tind==len-6
+                    p1=poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:length(xvec), TriangleFace); color=cgammavec10[:], strokewidth=1,colorrange=(0,1)) 
+                elseif tind==len-7
+                    p1=poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:length(xvec), TriangleFace); color=cgammavec9[:], strokewidth=1,colorrange=(0,1)) 
+                elseif tind==len-8
+                    p1=poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:length(xvec), TriangleFace); color=cgammavec8[:], strokewidth=1,colorrange=(0,1)) 
+                elseif tind==len-9
+                    p1=poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:length(xvec), TriangleFace); color=cgammavec7[:], strokewidth=1,colorrange=(0,1)) 
+                elseif tind==len-10
+                    p1=poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:length(xvec), TriangleFace); color=cgammavec6[:], strokewidth=1,colorrange=(0,1)) 
+                elseif tind==len-11
+                    p1=poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:length(xvec), TriangleFace); color=cgammavec5[:], strokewidth=1,colorrange=(0,1)) 
+                elseif tind==len-12
+                    p1=poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:length(xvec), TriangleFace); color=cgammavec4[:], strokewidth=1,colorrange=(0,1)) 
+                elseif tind==len-13
+                    p1=poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:length(xvec), TriangleFace); color=cgammavec3[:], strokewidth=1,colorrange=(0,1)) 
+                elseif tind==len-14
+                    p1=poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:length(xvec), TriangleFace); color=cgammavec2[:], strokewidth=1,colorrange=(0,1)) 
+                elseif tind==len-15
+                    p1=poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:length(xvec), TriangleFace); color=cgammavec1[:], strokewidth=1,colorrange=(0,1)) 
+                elseif tind==len-16
+                    p1=poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:length(xvec), TriangleFace); color=cgammavec0[:], strokewidth=1,colorrange=(0,1)) 
                 end
-                ax1.title=string("Filling factor at t=", string(round(time_vector[tind])) ,"s")
-                    
+
+                #if tind==1;
+                #    p1=poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:length(xvec), TriangleFace); color=cgammavec1[:], strokewidth=1,colorrange=(0,1))  
+                #elseif tind==2;
+                #    p1=poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:length(xvec), TriangleFace); color=cgammavec2[:], strokewidth=1,colorrange=(0,1))  
+                #elseif tind==3;
+                #    p1=poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:length(xvec), TriangleFace); color=cgammavec3[:], strokewidth=1,colorrange=(0,1))  
+                #elseif tind==4;
+                #    p1=poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:length(xvec), TriangleFace); color=cgammavec4[:], strokewidth=1,colorrange=(0,1))  
+                #elseif tind==5;
+                #    p1=poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:length(xvec), TriangleFace); color=cgammavec5[:], strokewidth=1,colorrange=(0,1))  
+                #elseif tind==6;
+                #    p1=poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:length(xvec), TriangleFace); color=cgammavec6[:], strokewidth=1,colorrange=(0,1))  
+                #elseif tind==7;
+                #    p1=poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:length(xvec), TriangleFace); color=cgammavec7[:], strokewidth=1,colorrange=(0,1))  
+                #elseif tind==8;
+                #    p1=poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:length(xvec), TriangleFace); color=cgammavec8[:], strokewidth=1,colorrange=(0,1))  
+                #elseif tind==9;
+                #    p1=poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:length(xvec), TriangleFace); color=cgammavec9[:], strokewidth=1,colorrange=(0,1))  
+                #elseif tind==10;
+                #    p1=poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:length(xvec), TriangleFace); color=cgammavec10[:], strokewidth=1,colorrange=(0,1))  
+                #elseif tind==11;
+                #    p1=poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:length(xvec), TriangleFace); color=cgammavec11[:], strokewidth=1,colorrange=(0,1))  
+                #elseif tind==12;
+                #    p1=poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:length(xvec), TriangleFace); color=cgammavec12[:], strokewidth=1,colorrange=(0,1))  
+                #elseif tind==13;
+                #    p1=poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:length(xvec), TriangleFace); color=cgammavec13[:], strokewidth=1,colorrange=(0,1))  
+                #elseif tind==14;
+                #    p1=poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:length(xvec), TriangleFace); color=cgammavec14[:], strokewidth=1,colorrange=(0,1))  
+                #elseif tind==15;
+                #    p1=poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:length(xvec), TriangleFace); color=cgammavec15[:], strokewidth=1,colorrange=(0,1))  
+                #elseif tind==16;
+                #    p1=poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:length(xvec), TriangleFace); color=cgammavec16[:], strokewidth=1,colorrange=(0,1))  
+                #end
+                
+                ax1.title=string("Filling factor at t=", string(round(time_vector[tind])) ,"s")   
                 hidedecorations!(ax1)
                 hidespines!(ax1) 
                 display(fig)
