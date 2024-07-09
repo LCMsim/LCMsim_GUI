@@ -5,7 +5,7 @@ The intended operating system for LCMsim v2 is Windows. The software was extensi
 - Extract and double click on the batch file to install the missing Julia packages
 ```@raw html
 <img src="assets/figures/fig_installation_001.png">
-
+```
 - Configure lcmsim_config.jl :
 ```
 i_batch=0
@@ -16,7 +16,8 @@ repositorypath="D:\\work\\LCMsim_v2_20240423_test\\LCMsim_v2.jl"
 guipath="D:\\work\\LCMsim_v2_20240423_test\\LCMsim_GUI\\gui_and_cases\\gui"
 include(joinpath(guipath,"lcmsim_v2_gui_gtk4.jl"))
 ```
-- Launch the GUI in the cases folder :```@raw html
+- Launch the GUI in the cases folder :
+```@raw html
 <img src="assets/figures/fig_installation_002.png">
 ```
 -Different GUI layout but same functionalities
