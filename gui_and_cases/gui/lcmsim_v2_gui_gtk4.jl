@@ -4,9 +4,10 @@ using HDF5
 using JLD2
 using GeometryBasics
 using NativeFileDialog
+using LinearAlgebra
 
 #for testing purpose only
-i_batch=0;i_model=2;i_mesh=1;mypath="D:\\work\\github\\LCMsim_GUI\\gui_and_cases\\cases";repositorypath="D:\\work\\github\\LCMsim_v2.jl";guipath="D:\\work\\github\\lcmsim_gui\\gui_and_cases\\gui"
+#i_batch=0;i_model=2;i_mesh=1;mypath="D:\\work\\github\\LCMsim_GUI\\gui_and_cases\\cases";repositorypath="D:\\work\\github\\LCMsim_v2.jl";guipath="D:\\work\\github\\lcmsim_gui\\gui_and_cases\\gui"
 
     @info "i_batch = $i_batch"
     @info "i_model = $i_model"
@@ -18,19 +19,15 @@ i_batch=0;i_model=2;i_mesh=1;mypath="D:\\work\\github\\LCMsim_GUI\\gui_and_cases
     include(jlpath)
     using .LCMsim_v2
 
-
-
-
     #screen = Gtk4Makie.GTKScreen(size=(1200, 800),title="LCMsim v2")
     screen = Gtk4Makie.GTKScreen(title="LCMsim v2")
-    filename="D:\\work\\github\\LCMsim_GUI\\gui_and_cases\\gui\\test.jld2"
+    filename=joinpath(guipath,"figures","start.jld2")
     @load filename xyz N cgammavec minval maxval
     p1=display(screen, poly(connect(xyz, GeometryBasics.Point{3}), connect(1:3*N, TriangleFace); color=cgammavec[:], strokewidth=1,colorrange=(minval,maxval)))
-    #empty!(ax1) 
-    #p1 = poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:3*N, TriangleFace); color=cgammavec[:], strokewidth=1,colorrange=(0,1))    
     ax1=current_axis()  #perspectiveness=0.5, viewmode=:fitzoom,aspect=(ax,ay,az))
     fig1=current_figure()
     ax1.show_axis=false
+    
     
     h=grid(screen)
     g=Gtk4.GtkGrid()
@@ -45,6 +42,14 @@ i_batch=0;i_model=2;i_mesh=1;mypath="D:\\work\\github\\LCMsim_GUI\\gui_and_cases
     end
     mf1=GtkEntry(); set_gtk_property!(mf1,:text,"0");
     mf2=GtkEntry(); set_gtk_property!(mf2,:text,"");set_gtk_property!(mf2,:editable,false)
+    choices = ["Mesh",  "Thickness", "Porosity", "Permeability", "Alpha" ]
+    mf3 = GtkDropDown(choices)
+    mf3.selected = 0
+    signal_connect(mf3, "notify::selected") do widget, others...
+    idx11 = mf3.selected
+    end
+
+
     r=GtkEntry(); set_gtk_property!(r,:text,"0.01")
     sel=GtkButton("Select inlet ports");
     t=GtkEntry(); set_gtk_property!(t,:text,"200")
@@ -54,6 +59,12 @@ i_batch=0;i_model=2;i_mesh=1;mypath="D:\\work\\github\\LCMsim_GUI\\gui_and_cases
     pr=GtkButton("Plot results");pr1=GtkEntry(); set_gtk_property!(pr1,:text,"1");pf1=Gtk4.GtkScale(:h, 0:16);
     pf=GtkEntry();set_gtk_property!(pf,:text,"Plot filling");set_gtk_property!(pf,:editable,false)
     pr2=GtkEntry(); set_gtk_property!(pr2,:text,"");set_gtk_property!(pr2,:editable,false)
+    choices = ["Filling factor",  "Pressure", "Mass density", "Velocity magnitude"]
+    pr3 = GtkDropDown(choices)
+    pr3.selected = 0
+    signal_connect(pr3, "notify::selected") do widget, others...
+    idx12 = pr3.selected
+    end
     ra=Gtk4.GtkCheckButton("Results available"); set_gtk_property!(ra,:active,false);
     in1=GtkButton("Select part file")
     in1a=GtkButton("Select sim file")
@@ -114,13 +125,21 @@ i_batch=0;i_model=2;i_mesh=1;mypath="D:\\work\\github\\LCMsim_GUI\\gui_and_cases
     p4_8=GtkEntry(); set_gtk_property!(p4_8,:text,"0.7")
     p4_9=GtkEntry(); set_gtk_property!(p4_9,:text,"60000")
 
+    a0_1=GtkButton("Assign direction");
+    a1_1=GtkButton("Assign direction");
+    a2_1=GtkButton("Assign direction");
+    a3_1=GtkButton("Assign direction");
+    a4_1=GtkButton("Assign direction");
+    dir=GtkEntry(); set_gtk_property!(dir,:text,"1.00, 0.00, 0.00");set_gtk_property!(dir,:editable,false)
+    seldir=GtkButton("Select direction");
+    r1=GtkButton("Zoom to fit");
+    r2=GtkButton("Plot axes");
+
     choices = ["Ignore",  "Pressure inlet", "Pressure outlet", "Patch" ]
     f1 = GtkDropDown(choices)
     f1.selected = 1
     signal_connect(f1, "notify::selected") do widget, others...
     idx1 = f1.selected
-    #str1 = Gtk4.selected_string(dd)
-    #@info "Active element is " * str1 * " at index $idx1"
     end
     f2 = GtkDropDown(choices)
     f2.selected = 0
@@ -138,47 +157,59 @@ i_batch=0;i_model=2;i_mesh=1;mypath="D:\\work\\github\\LCMsim_GUI\\gui_and_cases
     idx4 = f4.selected
     end
 
+    im=Gtk4.GtkImage(joinpath(guipath,"figures","square_100x100px.png"))
+    im1=Gtk4.GtkImage(joinpath(guipath,"figures","square_100x100px.png"))
+    im2=Gtk4.GtkImage(joinpath(guipath,"figures","square_100x100px.png"))
+    im3=Gtk4.GtkImage(joinpath(guipath,"figures","square_100x100px.png"))
+    im4=Gtk4.GtkImage(joinpath(guipath,"figures","square_100x100px.png"))
+    q=GtkButton("Quit")
 
+                                                                                g[6,1]=q
+                                                                                g[6,2]=im3
     if i_batch==0
-    g[1,2]=sm;g[2,2] = mf; g[3,2] = ps;  g[4,2] = pm;  
-                                         g[4,3] = mf1;  
-                                         g[4,4] = mf2;  
-
-    g[1,5]=r;g[2,5]=sel;                                                                  
-    g[1,6]=t;g[2,6]=ss;g[3,6]=cs;
-             g[2,7]=si;g[3,7]=ci;
-    g[1,8]=ra; g[2,8]=pr;g[3,8]=pf1;
-               g[2,9]=pr1;g[3,9]=tend;
-               g[2,10]=pr2;
+    g[1,3]=sm;g[2,3] = mf; g[3,3] = ps;  g[4,3] = pm;  g[5,3] = r1; 
+                                         g[4,4] = mf3; g[5,4] = r2; 
+                                         g[4,5] = mf2;  
+                                                       g[5,6] = im;
+    g[1,7]=r;g[2,7]=sel;   
+    g[1,8]=t;g[2,8]=ss;g[3,8]=cs;
+             g[2,9]=si;g[3,9]=ci;
+    g[1,10]=ra; g[2,10]=pr;g[3,10]=pf1;
+               g[2,11]=pr3;g[3,11]=tend;
+                                                        g[5,12] = im1;
                                          
     if i_model==1 || i_model==2 || i_model==3
-                                     g[3,12] = f1;   g[4,12] = f2;   g[5,12] = f3;   g[6,12] = f4;  
-    g[1,13] = par_0; g[2,13] = p0_1; g[3,13] = p1_1; g[4,13] = p2_1; g[5,13] = p3_1; g[6,13] = p4_1; 
-    g[1,14] = par_1; g[2,14] = p0_2; g[3,14] = p1_2; g[4,14] = p2_2; g[5,14] = p3_2; g[6,14] = p4_2; 
-    g[1,15] = par_2; g[2,15] = p0_3; g[3,15] = p1_3; g[4,15] = p2_3; g[5,15] = p3_3; g[6,15] = p4_3; 
-    g[1,16] = par_3; g[2,16] = p0_4; g[3,16] = p1_4; g[4,16] = p2_4; g[5,16] = p3_4; g[6,16] = p4_4; 
-    g[1,17] = par_4; g[2,17] = p0_5; g[3,17] = p1_5; g[4,17] = p2_5; g[5,17] = p3_5; g[6,17] = p4_5; 
-    g[1,18] = par_5; g[2,18] = p0_6; g[3,18] = p1_6; g[4,18] = p2_6; g[5,18] = p3_6; g[6,18] = p4_6;      
-                     g[2,19] = p0_7; g[3,19] = p1_7; g[4,19] = p2_7; g[5,19] = p3_7; g[6,19] = p4_7;   
+                                     g[3,22] = f1;   g[4,22] = f2;   g[5,22] = f3;   g[6,22] = f4;  
+    g[1,23] = par_0; g[2,23] = p0_1; g[3,23] = p1_1; g[4,23] = p2_1; g[5,23] = p3_1; g[6,23] = p4_1; 
+    g[1,24] = par_1; g[2,24] = p0_2; g[3,24] = p1_2; g[4,24] = p2_2; g[5,24] = p3_2; g[6,24] = p4_2; 
+    g[1,25] = par_2; g[2,25] = p0_3; g[3,25] = p1_3; g[4,25] = p2_3; g[5,25] = p3_3; g[6,25] = p4_3; 
+    g[1,26] = par_3; g[2,26] = p0_4; g[3,26] = p1_4; g[4,26] = p2_4; g[5,26] = p3_4; g[6,26] = p4_4; 
+    g[1,27] = par_4; g[2,27] = p0_5; g[3,27] = p1_5; g[4,27] = p2_5; g[5,27] = p3_5; g[6,27] = p4_5; 
+    g[1,28] = par_5; g[2,28] = p0_6; g[3,28] = p1_6; g[4,28] = p2_6; g[5,28] = p3_6; g[6,28] = p4_6;      
+                     g[2,29] = p0_7; g[3,29] = p1_7; g[4,29] = p2_7; g[5,29] = p3_7; g[6,29] = p4_7;   
     end   
     if i_model==3                    
-                     g[2,20] = p0_8; g[3,20] = p1_8; g[4,20] = p2_8; g[5,20] = p3_8; g[6,20] = p4_8; 
-                     g[2,21] = p0_9; g[3,21] = p1_9; g[4,21] = p2_9; g[5,21] = p3_9; g[6,21] = p4_9; 
+                     g[2,30] = p0_8; g[3,30] = p1_8; g[4,30] = p2_8; g[5,30] = p3_8; g[6,30] = p4_8; 
+                     g[2,31] = p0_9; g[3,31] = p1_9; g[4,31] = p2_9; g[5,31] = p3_9; g[6,31] = p4_9; 
     end
+                                                                     #g[5,40] = im2;
+    g[1,41]=seldir;  g[2,41] = a0_1; g[3,41] = a1_1; g[4,41] = a2_1; g[5,41] = a3_1; g[6,41] = a4_1; 
+    g[1,42]=dir;
     elseif i_batch==1
         g[1,2] = in1;   g[2,2] = in2;  
         g[1,3] = in1a;  g[2,3] = in2a;
         g[1,4]=sm;g[2,4] = mf; g[3,4] = ps;  g[4,4] = pm;  
-        g[4,5] = mf1;  
+        g[4,5] = mf3;  
         g[4,6] = mf2;  
-        g[1,7] = par_0; g[2,7] = t;  g[3,7] = in3;  
-        g[1,8]=ra; g[2,8]=pr;g[3,8]=pf1;
-               g[2,9]=pr1;g[3,9]=tend;
-               g[2,10]=pr2;
+        g[4,7] = im;
+        g[1,8] = par_0; g[2,8] = t;  g[3,8] = in3;  
+        g[1,9]=ra; g[2,9]=pr;g[3,9]=pf1;
+               g[2,10]=pr3;g[3,10]=tend;
     end
+    
     g.column_homogeneous = true
+    #@info "g="*string(g)
     h[2,1]=g
-
 
     #callback functions
     function sm_clicked(w)
@@ -212,7 +243,7 @@ i_batch=0;i_model=2;i_mesh=1;mypath="D:\\work\\github\\LCMsim_GUI\\gui_and_cases
         str1_1 = get_gtk_property(mf1,:text,String); 
 
         #coloring of mesh: 0..none, 1..thickness, 2..porosity, 3..permeability, 4..alpha
-        i_var_in=parse(Int,str1_1)
+        i_var_in=mf3.selected
         if i_var_in>=0 && i_var_in<=4
             i_var=i_var_in
         else
@@ -247,54 +278,11 @@ i_batch=0;i_model=2;i_mesh=1;mypath="D:\\work\\github\\LCMsim_GUI\\gui_and_cases
             if i_model==1 || i_model==2 || i_model==3
                 push!(lines,"name,type,part_id,thickness,porosity,porosity_noise,permeability,permeability_noise,alpha,refdir1,refdir2,refdir3,porosity_1,p_1")
                 push!(lines,string("base,base,1,",str11,",",str12,",0.0,",str13,",0.0,",str14,",",str15,",",str16,",",str17,",",str12,",","1e5"))
-                #if patchtype1val==0
-                    push!(notusedsets, "2")
-                #else
-                #    if patchtype1val==1
-                #        patchtype="inlet"
-                #    elseif patchtype1val==2
-                #        patchtype="patch"
-                #    elseif patchtype1val==3
-                #        patchtype="outlet"
-                #    end
-                #    push!(lines,string("patch1,", patchtype,",2,",str21,",",str22,",0.0,",str23,",0.0,",str24,",",str25,",",str26,",",str27,",",str22,",","1e5"))
-                #end
-                #if patchtype2val==0
-                    push!(notusedsets, "3")
-                #else
-                #    if patchtype2val==1
-                #        patchtype="inlet"
-                #    elseif patchtype2val==2
-                #        patchtype="patch"
-                #    elseif patchtype2val==3
-                #        patchtype="outlet"
-                #    end
-                #    push!(lines,string("patch2,", patchtype,",3,",str21,",",str22,",0.0,",str23,",0.0,",str24,",",str25,",",str26,",",str27,",",str22,",","1e5"))
-                #end
-                #if patchtype3val==0
-                    push!(notusedsets, "4")
-                #else
-                #    if patchtype3val==1
-                #        patchtype="inlet"
-                #    elseif patchtype3val==2
-                #        patchtype="patch"
-                #    elseif patchtype3val==3
-                #        patchtype="outlet"
-                #    end
-                #    push!(lines,string("patch3,", patchtype,",4,",str31,",",str32,",0.0,",str33,",0.0,",str34,",",str35,",",str36,",",str37,",",str32,",","1e5"))
-                #end
-                #if patchtype4val==0
-                    push!(notusedsets, "5")
-                #else
-                #    if patchtype4val==1
-                #        patchtype="inlet"
-                #    elseif patchtype4val==2
-                #        patchtype="patch"
-                #    elseif patchtype4val==3
-                #        patchtype="outlet"
-                #    end
-                #    push!(lines,string("patch4,", patchtype,",5,",str41,",",str42,",0.0,",str43,",0.0,",str44,",",str45,",",str46,",",str47,",",str42,",","1e5"))
-                #end
+                push!(notusedsets, "2")
+				push!(notusedsets, "3")
+                push!(notusedsets, "4")
+                push!(notusedsets, "5")
+				push!(notusedsets, "6")
             end
             for line in lines
                 println(wfn,line)
@@ -349,6 +337,7 @@ i_batch=0;i_model=2;i_mesh=1;mypath="D:\\work\\github\\LCMsim_GUI\\gui_and_cases
         end
 
         savepath = mypath   
+        t_max = parse(Float64,get_gtk_property(t,:text,String))  #100.
         t_max = parse(Float64,get_gtk_property(t,:text,String))  #100.
         t_step = t_max/4
         i_model=parse(Int,get_gtk_property(par_0,:text,String))  #2
@@ -493,27 +482,23 @@ i_batch=0;i_model=2;i_mesh=1;mypath="D:\\work\\github\\LCMsim_GUI\\gui_and_cases
             ##end
             #display(fig)
 
-            if i_var==0
-                #screen = Gtk4Makie.GTKScreen(size=(1200, 800),title="Mesh")
-                set_gtk_property!(mf2,:text,"Mesh")
-            elseif i_var==1
-                #screen = Gtk4Makie.GTKScreen(size=(1200, 800),title="Thickness")
-                set_gtk_property!(mf2,:text,"Thickness")
-            elseif i_var==2
-                #screen = Gtk4Makie.GTKScreen(size=(1200, 800),title="Porosity")
-                set_gtk_property!(mf2,:text,"Porosity")
-            elseif i_var==3
-                #screen = Gtk4Makie.GTKScreen(size=(1200, 800),title="Permeability")
-                set_gtk_property!(mf2,:text,"Permeability")
-            elseif i_var==4
-                #screen = Gtk4Makie.GTKScreen(size=(1200, 800),title="Alpha")
-                set_gtk_property!(mf2,:text,"Alpha")
-            end
             empty!(ax1) 
-            p1 = poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:3*N, TriangleFace); color=cgammavec[:], strokewidth=1,colorrange=(minval,maxval))
-            if i_var>=1
-                fig1=current_figure();
-                [delete!(col1) for col1 in fig1.content if col1 isa Colorbar]
+            if i_var==0
+                #set_gtk_property!(mf2,:text, string("Bounding box = ", string(round(deltax*100)/100)," x ",string(round(deltay*100)/100)," x ",string(round(deltaz*100)/100)     ) )
+                set_gtk_property!(mf2,:text, string( string(round(deltax*100)/100)," x ",string(round(deltay*100)/100)," x ",string(round(deltaz*100)/100)     ) )
+                p1 = poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:3*N, TriangleFace); color=:white, strokewidth=1,colorrange=(minval,maxval))
+            elseif i_var==1
+                p1 = poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:3*N, TriangleFace); color=cgammavec[:], strokewidth=1,colorrange=(minval,maxval))
+            elseif i_var==2
+                p1 = poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:3*N, TriangleFace); color=cgammavec[:], strokewidth=1,colorrange=(minval,maxval))
+            elseif i_var==3
+                p1 = poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:3*N, TriangleFace); color=cgammavec[:], strokewidth=1,colorrange=(minval,maxval))
+            elseif i_var==4
+                p1 = poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:3*N, TriangleFace); color=cgammavec[:], strokewidth=1,colorrange=(minval,maxval))
+            end
+            fig1=current_figure();
+            [delete!(col1) for col1 in fig1.content if col1 isa Colorbar]
+            if i_var>=1                
                 col1=Colorbar(fig1, colormap = :viridis,  vertical=true, height=Relative(0.5),colorrange=(minval,maxval));  
             end
        
@@ -788,7 +773,7 @@ i_batch=0;i_model=2;i_mesh=1;mypath="D:\\work\\github\\LCMsim_GUI\\gui_and_cases
             minval=minval-deltaval        
             resolution_val = 800  #1200
             empty!(ax1)    
-            p1 = poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:3*N, TriangleFace); color=cgammavec[:], strokewidth=1,colorrange=(minval,maxval))
+            p1 = poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:3*N, TriangleFace); color=cgammavec[:], strokewidth=1,colorrange=(1,5))
             fig1=current_figure();
             [delete!(col1) for col1 in fig1.content if col1 isa Colorbar]
             col1=Colorbar(fig1, colormap = :viridis,  vertical=true, height=Relative(0.5),colorrange=(1,5));  
@@ -831,54 +816,11 @@ i_batch=0;i_model=2;i_mesh=1;mypath="D:\\work\\github\\LCMsim_GUI\\gui_and_cases
         if i_model==1 || i_model==2 || i_model==3
             push!(lines,"name,type,part_id,thickness,porosity,porosity_noise,permeability,permeability_noise,alpha,refdir1,refdir2,refdir3,porosity_1,p_1")
             push!(lines,string("base,base,1,",str11,",",str12,",0.0,",str13,",0.0,",str14,",",str15,",",str16,",",str17,",",str12,",","1e5"))
-            if patchtype1val==0
-                push!(notusedsets, "2")
-            else
-                if patchtype1val==1
-                    patchtype="inlet"
-                elseif patchtype1val==2
-                    patchtype="patch"
-                elseif patchtype1val==3
-                    patchtype="outlet"
-                end
-                push!(lines,string("patch1,", patchtype,",2,",str21,",",str22,",0.0,",str23,",0.0,",str24,",",str25,",",str26,",",str27,",",str22,",","1e5"))
-            end
-            if patchtype2val==0
-                push!(notusedsets, "3")
-            else
-                if patchtype2val==1
-                    patchtype="inlet"
-                elseif patchtype2val==2
-                    patchtype="patch"
-                elseif patchtype2val==3
-                    patchtype="outlet"
-                end
-                push!(lines,string("patch2,", patchtype,",3,",str21,",",str22,",0.0,",str23,",0.0,",str24,",",str25,",",str26,",",str27,",",str22,",","1e5"))
-            end
-            if patchtype3val==0
-                push!(notusedsets, "4")
-            else
-                if patchtype3val==1
-                    patchtype="inlet"
-                elseif patchtype3val==2
-                    patchtype="patch"
-                elseif patchtype3val==3
-                    patchtype="outlet"
-                end
-                push!(lines,string("patch3,", patchtype,",4,",str31,",",str32,",0.0,",str33,",0.0,",str34,",",str35,",",str36,",",str37,",",str32,",","1e5"))
-            end
-            if patchtype4val==0
-                push!(notusedsets, "5")
-            else
-                if patchtype4val==1
-                    patchtype="inlet"
-                elseif patchtype4val==2
-                    patchtype="patch"
-                elseif patchtype4val==3
-                    patchtype="outlet"
-                end
-                push!(lines,string("patch4,", patchtype,",5,",str41,",",str42,",0.0,",str43,",0.0,",str44,",",str45,",",str46,",",str47,",",str42,",","1e5"))
-            end
+            push!(notusedsets, "2")
+            push!(notusedsets, "3")
+            push!(notusedsets, "4")
+            push!(notusedsets, "5")
+			push!(notusedsets, "6")
         end
         for line in lines
             println(wfn,line)
@@ -1075,17 +1017,17 @@ i_batch=0;i_model=2;i_mesh=1;mypath="D:\\work\\github\\LCMsim_GUI\\gui_and_cases
             resolution_val = 800 
             markersizeval=20 
             empty!(ax1)    
+            p1 = poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:3*N, TriangleFace); color=:white, strokewidth=1,colorrange=(0,1))
             fig2=scatter!(positions,markersize=markersizeval,color = :blue)
-            @info "fig2 = " * string(fig2)
+			fig1=current_figure();
+            [delete!(col1) for col1 in fig1.content if col1 isa Colorbar]
 
             on(events(fig2).mousebutton, priority = 2) do event
                 if event.button == Mouse.left && event.action == Mouse.press
                     if Keyboard.p in events(fig2).keyboardstate
                         plt, i = pick(fig2,events(fig2).mouseposition[])
-                        @info "plt = " * string(plt)
-                        @info "i = " * string(i)
                         if plt == fig2  #p2
-                            t_div=100;
+                            t_div=10000;
                             xpos=positions[][i][1];
                             ypos=positions[][i][2];
                             zpos=positions[][i][3];
@@ -1332,9 +1274,9 @@ i_batch=0;i_model=2;i_mesh=1;mypath="D:\\work\\github\\LCMsim_GUI\\gui_and_cases
                     patchtype="outlet"
                 end
                 if i_model==1 || i_model==2
-                    push!(lines,string("patch2,", patchtype,",4,",str31,",",str32,",0.0,",str33,",0.0,",str34,",",str35,",",str36,",",str37,",",str32,",","1e5"))
+                    push!(lines,string("patch2,", patchtype,",3,",str31,",",str32,",0.0,",str33,",0.0,",str34,",",str35,",",str36,",",str37,",",str32,",","1e5"))
                 elseif i_model==3
-                    push!(lines,string("patch2,", patchtype,",4,",str31,",",str32,",0.0,",str33,",0.0,",str34,",",str35,",",str36,",",str37,",",str38,",",str39))
+                    push!(lines,string("patch2,", patchtype,",3,",str31,",",str32,",0.0,",str33,",0.0,",str34,",",str35,",",str36,",",str37,",",str38,",",str39))
                 end
             end
             if patchtype3val==0
@@ -1348,9 +1290,9 @@ i_batch=0;i_model=2;i_mesh=1;mypath="D:\\work\\github\\LCMsim_GUI\\gui_and_cases
                     patchtype="outlet"
                 end
                 if i_model==1 || i_model==2
-                    push!(lines,string("patch3,", patchtype,",5,",str41,",",str42,",0.0,",str43,",0.0,",str44,",",str45,",",str46,",",str47,",",str42,",","1e5"))
+                    push!(lines,string("patch3,", patchtype,",4,",str41,",",str42,",0.0,",str43,",0.0,",str44,",",str45,",",str46,",",str47,",",str42,",","1e5"))
                 elseif i_model==3
-                    push!(lines,string("patch3,", patchtype,",5,",str41,",",str42,",0.0,",str43,",0.0,",str44,",",str45,",",str46,",",str47,",",str48,",",str49))
+                    push!(lines,string("patch3,", patchtype,",4,",str41,",",str42,",0.0,",str43,",0.0,",str44,",",str45,",",str46,",",str47,",",str48,",",str49))
                 end
             end
             if patchtype4val==0
@@ -1461,6 +1403,23 @@ i_batch=0;i_model=2;i_mesh=1;mypath="D:\\work\\github\\LCMsim_GUI\\gui_and_cases
         restartval=Int64(0); interactiveval=Int64(0); noutval=Int64(16); 
         modelval=parse(Int64,str0);
 
+        if patchtype1val==1;
+		    #f1.selected = 0
+		    patchtype1val=Int64(0)
+	    end
+		if patchtype2val==1;
+		    #f2.selected = 0
+		    patchtype2val=Int64(0)
+	    end
+		if patchtype3val==1;
+		    #f3.selected = 0
+		    patchtype3val=Int64(0)
+	    end
+		if patchtype4val==1;
+		    #f4.selected = 0
+		    patchtype4val=Int64(0)
+	    end
+
         partfile = joinpath(mypath,"_part_description.csv")
         writefilename=partfile
         touch(writefilename)
@@ -1502,9 +1461,9 @@ i_batch=0;i_model=2;i_mesh=1;mypath="D:\\work\\github\\LCMsim_GUI\\gui_and_cases
                     patchtype="outlet"
                 end
                 if i_model==1 || i_model==2
-                    push!(lines,string("patch2,", patchtype,",4,",str31,",",str32,",0.0,",str33,",0.0,",str34,",",str35,",",str36,",",str37,",",str32,",","1e5"))
+                    push!(lines,string("patch2,", patchtype,",3,",str31,",",str32,",0.0,",str33,",0.0,",str34,",",str35,",",str36,",",str37,",",str32,",","1e5"))
                 elseif i_model==3
-                    push!(lines,string("patch2,", patchtype,",4,",str31,",",str32,",0.0,",str33,",0.0,",str34,",",str35,",",str36,",",str37,",",str38,",",str39))
+                    push!(lines,string("patch2,", patchtype,",3,",str31,",",str32,",0.0,",str33,",0.0,",str34,",",str35,",",str36,",",str37,",",str38,",",str39))
                 end
             end
             if patchtype3val==0
@@ -1518,9 +1477,9 @@ i_batch=0;i_model=2;i_mesh=1;mypath="D:\\work\\github\\LCMsim_GUI\\gui_and_cases
                     patchtype="outlet"
                 end
                 if i_model==1 || i_model==2
-                    push!(lines,string("patch3,", patchtype,",5,",str41,",",str42,",0.0,",str43,",0.0,",str44,",",str45,",",str46,",",str47,",",str42,",","1e5"))
+                    push!(lines,string("patch3,", patchtype,",4,",str41,",",str42,",0.0,",str43,",0.0,",str44,",",str45,",",str46,",",str47,",",str42,",","1e5"))
                 elseif i_model==3
-                    push!(lines,string("patch3,", patchtype,",5,",str41,",",str42,",0.0,",str43,",0.0,",str44,",",str45,",",str46,",",str47,",",str48,",",str49))
+                    push!(lines,string("patch3,", patchtype,",4,",str41,",",str42,",0.0,",str43,",0.0,",str44,",",str45,",",str46,",",str47,",",str48,",",str49))
                 end
             end
             if patchtype4val==0
@@ -1629,6 +1588,23 @@ i_batch=0;i_model=2;i_mesh=1;mypath="D:\\work\\github\\LCMsim_GUI\\gui_and_cases
         restartval=Int64(1); interactiveval=Int64(0); noutval=Int64(16); 
         modelval=parse(Int64,str0);
 
+        if patchtype1val==1;
+		    #f1.selected = 0
+		    patchtype1val=Int64(0)
+	    end
+		if patchtype2val==1;
+		    #f2.selected = 0
+		    patchtype2val=Int64(0)
+	    end
+		if patchtype3val==1;
+		    #f3.selected = 0
+		    patchtype3val=Int64(0)
+	    end
+		if patchtype4val==1;
+		    #f4.selected = 0
+		    patchtype4val=Int64(0)
+	    end
+		
         partfile = joinpath(mypath,"_part_description.csv")
         writefilename=partfile
         touch(writefilename)
@@ -1670,9 +1646,9 @@ i_batch=0;i_model=2;i_mesh=1;mypath="D:\\work\\github\\LCMsim_GUI\\gui_and_cases
                     patchtype="outlet"
                 end
                 if i_model==1 || i_model==2
-                    push!(lines,string("patch2,", patchtype,",4,",str31,",",str32,",0.0,",str33,",0.0,",str34,",",str35,",",str36,",",str37,",",str32,",","1e5"))
+                    push!(lines,string("patch2,", patchtype,",3,",str31,",",str32,",0.0,",str33,",0.0,",str34,",",str35,",",str36,",",str37,",",str32,",","1e5"))
                 elseif i_model==3
-                    push!(lines,string("patch2,", patchtype,",4,",str31,",",str32,",0.0,",str33,",0.0,",str34,",",str35,",",str36,",",str37,",",str38,",",str39))
+                    push!(lines,string("patch2,", patchtype,",3,",str31,",",str32,",0.0,",str33,",0.0,",str34,",",str35,",",str36,",",str37,",",str38,",",str39))
                 end
             end
             if patchtype3val==0
@@ -1686,9 +1662,9 @@ i_batch=0;i_model=2;i_mesh=1;mypath="D:\\work\\github\\LCMsim_GUI\\gui_and_cases
                     patchtype="outlet"
                 end
                 if i_model==1 || i_model==2
-                    push!(lines,string("patch3,", patchtype,",5,",str41,",",str42,",0.0,",str43,",0.0,",str44,",",str45,",",str46,",",str47,",",str42,",","1e5"))
+                    push!(lines,string("patch3,", patchtype,",4,",str41,",",str42,",0.0,",str43,",0.0,",str44,",",str45,",",str46,",",str47,",",str42,",","1e5"))
                 elseif i_model==3
-                    push!(lines,string("patch3,", patchtype,",5,",str41,",",str42,",0.0,",str43,",0.0,",str44,",",str45,",",str46,",",str47,",",str48,",",str49))
+                    push!(lines,string("patch3,", patchtype,",4,",str41,",",str42,",0.0,",str43,",0.0,",str44,",",str45,",",str46,",",str47,",",str48,",",str49))
                 end
             end
             if patchtype4val==0
@@ -1785,13 +1761,13 @@ i_batch=0;i_model=2;i_mesh=1;mypath="D:\\work\\github\\LCMsim_GUI\\gui_and_cases
     function pr_clicked(w)
         if ra.active==true
             i_model=parse(Int,get_gtk_property(par_0,:text,String))
-            i_var_in=parse(Int,get_gtk_property(pr1,:text,String)); 
+            i_var_in=pr3.selected
 
-            #coloring of mesh: 1..gamma, 2..p, 3..rho, 4..sqrt(u^2+v^2)
-            if i_var_in>=1 && i_var_in<=4
+            #coloring of mesh: 0..gamma, 1..p, 2..rho, 3..sqrt(u^2+v^2)
+            if i_var_in>=0 && i_var_in<=3
                 i_var=i_var_in
             else
-                i_var=1
+                i_var=0
             end 
 
             savepath = mypath
@@ -1832,13 +1808,13 @@ i_batch=0;i_model=2;i_mesh=1;mypath="D:\\work\\github\\LCMsim_GUI\\gui_and_cases
                 states = keys(meshfile["/"])
                 states = filter(s -> s[1:3] == "sta", states)
                 
-                if i_var==1
+                if i_var==0
                     gammas = [read_dataset(meshfile["/" * state], "gamma") for state in states]
-                elseif i_var==2
+                elseif i_var==1
                     gammas = [read_dataset(meshfile["/" * state], "p") for state in states]
-                elseif i_var==3
+                elseif i_var==2
                     gammas = [read_dataset(meshfile["/" * state], "rho") for state in states]
-                elseif i_var==4
+                elseif i_var==3
                     gammas = [read_dataset(meshfile["/" * state], "u") for state in states]
                     gammas1 = [read_dataset(meshfile["/" * state], "u") for state in states]
                     gammas2 = [read_dataset(meshfile["/" * state], "v") for state in states]
@@ -1900,23 +1876,23 @@ i_batch=0;i_model=2;i_mesh=1;mypath="D:\\work\\github\\LCMsim_GUI\\gui_and_cases
                 minval=minval-deltaval
 
                 ax1=current_axis()
-                if i_var==1
+                if i_var==0
                     empty!(ax1)
                     p1 = poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:3*N, TriangleFace); color=cgammavec[:], strokewidth=1,colorrange=(0,1))
                     fig1=current_figure(); [delete!(col1) for col1 in fig1.content if col1 isa Colorbar]
                     col1=Colorbar(fig1, colormap = :viridis,  vertical=true, height=Relative(0.5),colorrange=(0,1));  
                     set_gtk_property!(pr2,:text,"Gamma")
-                elseif i_var==2
+                elseif i_var==1
                     empty!(ax1)
                     p1 = poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:3*N, TriangleFace); color=cgammavec[:], strokewidth=1)
                     fig1=current_figure(); [delete!(col1) for col1 in fig1.content if col1 isa Colorbar]
                     set_gtk_property!(pr2,:text,"Pressure")
-                elseif i_var==3
+                elseif i_var==2
                     empty!(ax1)
                     p1 = poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:3*N, TriangleFace); color=cgammavec[:], strokewidth=1)
                     fig1=current_figure(); [delete!(col1) for col1 in fig1.content if col1 isa Colorbar]
                     set_gtk_property!(pr2,:text,"Mass density")
-                elseif i_var==4                
+                elseif i_var==3
                     empty!(ax1)
                     p1 = poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:3*N, TriangleFace); color=cgammavec[:], strokewidth=1,colorrange=(minval,maxval))
                     fig1=current_figure(); [delete!(col1) for col1 in fig1.content if col1 isa Colorbar]
@@ -1932,13 +1908,13 @@ i_batch=0;i_model=2;i_mesh=1;mypath="D:\\work\\github\\LCMsim_GUI\\gui_and_cases
             #println("Value changed")
             value = Int(round(Gtk4.value(pf1)))
             #println(string(value))
-
+    
             i_model=parse(Int,get_gtk_property(par_0,:text,String))
             savepath = mypath
     
             polys::Vector{Polygon} = []
             gamma::Vector{Float64} = []
-    
+     
             h5open(joinpath(savepath,"data.h5"), "r") do meshfile
                 grid = read_dataset(meshfile["/mesh"], "vertices")
                 cells = read_dataset(meshfile["/mesh"], "cells")
@@ -2184,14 +2160,595 @@ i_batch=0;i_model=2;i_mesh=1;mypath="D:\\work\\github\\LCMsim_GUI\\gui_and_cases
 
         LCMsim_v2.create_and_solve(savepath,meshfile,partfile,simfile,modeltype,t_max,t_step,LCMsim_v2.verbose,true,true)
     end
+    function a0_1_clicked(w)
+        str = get_gtk_property(dir,:text,String); 
+        str1=split(str,",")
+        set_gtk_property!(p0_5,:text,strip(str1[1]));
+        set_gtk_property!(p0_6,:text,strip(str1[2]));
+        set_gtk_property!(p0_7,:text,strip(str1[3]));
+    end
+    function a1_1_clicked(w)
+        str = get_gtk_property(dir,:text,String); 
+        str1=split(str,",")
+        set_gtk_property!(p1_5,:text,strip(str1[1]));
+        set_gtk_property!(p1_6,:text,strip(str1[2]));
+        set_gtk_property!(p1_7,:text,strip(str1[3]));
+    end
+    function a2_1_clicked(w)
+        str = get_gtk_property(dir,:text,String); 
+        str1=split(str,",")
+        set_gtk_property!(p2_5,:text,strip(str1[1]));
+        set_gtk_property!(p2_6,:text,strip(str1[2]));
+        set_gtk_property!(p2_7,:text,strip(str1[3]));
+    end
+    function a3_1_clicked(w)
+        str = get_gtk_property(dir,:text,String); 
+        str1=split(str,",")
+        set_gtk_property!(p3_5,:text,strip(str1[1]));
+        set_gtk_property!(p3_6,:text,strip(str1[2]));
+        set_gtk_property!(p3_7,:text,strip(str1[3]));
+    end
+    function a4_1_clicked(w)
+        str = get_gtk_property(dir,:text,String); 
+        str1=split(str,",")
+        set_gtk_property!(p4_5,:text,strip(str1[1]));
+        set_gtk_property!(p4_6,:text,strip(str1[2]));
+        set_gtk_property!(p4_7,:text,strip(str1[3]));
+    end
+    function seldir_clicked(w)
+        str0 = get_gtk_property(par_0,:text,String); 
+        str1 = get_gtk_property(mf,:text,String); str2 = get_gtk_property(t,:text,String); str3 = get_gtk_property(par_3,:text,String); str4 = get_gtk_property(par_1,:text,String); str5 = get_gtk_property(par_2,:text,String); str6 = get_gtk_property(par_4,:text,String); str7 = get_gtk_property(par_5,:text,String);
+        str11 = get_gtk_property(p0_1,:text,String); str12 = get_gtk_property(p0_2,:text,String); str13 = get_gtk_property(p0_3,:text,String); str14 = get_gtk_property(p0_4,:text,String); str15 = get_gtk_property(p0_5,:text,String); str16 = get_gtk_property(p0_6,:text,String); str17 = get_gtk_property(p0_7,:text,String); str18 = get_gtk_property(p0_8,:text,String); str19 = get_gtk_property(p0_9,:text,String);
+        str21 = get_gtk_property(p1_1,:text,String); str22 = get_gtk_property(p1_2,:text,String); str23 = get_gtk_property(p1_3,:text,String); str24 = get_gtk_property(p1_4,:text,String); str25 = get_gtk_property(p1_5,:text,String); str26 = get_gtk_property(p1_6,:text,String); str27 = get_gtk_property(p1_7,:text,String); str28 = get_gtk_property(p1_8,:text,String); str29 = get_gtk_property(p1_9,:text,String);
+        str31 = get_gtk_property(p2_1,:text,String); str32 = get_gtk_property(p2_2,:text,String); str33 = get_gtk_property(p2_3,:text,String); str34 = get_gtk_property(p2_4,:text,String); str35 = get_gtk_property(p2_5,:text,String); str36 = get_gtk_property(p2_6,:text,String); str37 = get_gtk_property(p2_7,:text,String); str38 = get_gtk_property(p2_8,:text,String); str39 = get_gtk_property(p2_9,:text,String);
+        str41 = get_gtk_property(p3_1,:text,String); str42 = get_gtk_property(p3_2,:text,String); str43 = get_gtk_property(p3_3,:text,String); str44 = get_gtk_property(p3_4,:text,String); str45 = get_gtk_property(p3_5,:text,String); str46 = get_gtk_property(p3_6,:text,String); str47 = get_gtk_property(p3_7,:text,String); str48 = get_gtk_property(p3_8,:text,String); str49 = get_gtk_property(p3_9,:text,String);
+        str51 = get_gtk_property(p4_1,:text,String); str52 = get_gtk_property(p4_2,:text,String); str53 = get_gtk_property(p4_3,:text,String); str54 = get_gtk_property(p4_4,:text,String); str55 = get_gtk_property(p4_5,:text,String); str56 = get_gtk_property(p4_6,:text,String); str57 = get_gtk_property(p4_7,:text,String); str58 = get_gtk_property(p4_8,:text,String); str59 = get_gtk_property(p4_9,:text,String);
+        if f1.selected==0; patchtype1val=Int64(0); elseif f1.selected==1; patchtype1val=Int64(1); elseif f1.selected==2; patchtype1val=Int64(3); elseif f1.selected==3; patchtype1val=Int64(2); end
+        if f2.selected==0; patchtype2val=Int64(0); elseif f2.selected==1; patchtype2val=Int64(1); elseif f2.selected==2; patchtype2val=Int64(3); elseif f2.selected==3; patchtype2val=Int64(2); end
+        if f3.selected==0; patchtype3val=Int64(0); elseif f3.selected==1; patchtype3val=Int64(1); elseif f3.selected==2; patchtype3val=Int64(3); elseif f3.selected==3; patchtype3val=Int64(2); end
+        if f4.selected==0; patchtype4val=Int64(0); elseif f4.selected==1; patchtype4val=Int64(1); elseif f4.selected==2; patchtype4val=Int64(3); elseif f4.selected==3; patchtype4val=Int64(2); end
+        str61 = get_gtk_property(r,:text,String)
+        restartval=Int64(0); interactiveval=Int64(0); noutval=Int64(16); 
+        modelval=parse(Int64,str0);
+        str1_1 = get_gtk_property(mf1,:text,String); 
+
+        #coloring of mesh: 0..none, 1..thickness, 2..porosity, 3..permeability, 4..alpha
+        i_var_in=parse(Int,str1_1)
+        if i_var_in>=0 && i_var_in<=4
+            i_var=i_var_in
+        else
+            i_var=0
+        end 
+
+        partfile = joinpath(mypath,"_part_description.csv")
+        writefilename=partfile
+        touch(writefilename)
+        wfn = open(writefilename,"w")  
+        lines=String[]
+        notusedsets = Vector{String}()
+        i_model=parse(Int,get_gtk_property(par_0,:text,String))  #2
+        if i_model==1 || i_model==2 || i_model==3
+            push!(lines,"name,type,part_id,thickness,porosity,porosity_noise,permeability,permeability_noise,alpha,refdir1,refdir2,refdir3,porosity_1,p_1")
+            push!(lines,string("base,base,1,",str11,",",str12,",0.0,",str13,",0.0,",str14,",",str15,",",str16,",",str17,",",str12,",","1e5"))
+            push!(notusedsets, "2")
+            push!(notusedsets, "3")
+            push!(notusedsets, "4")
+            push!(notusedsets, "5")
+			push!(notusedsets, "6")
+        end
+        for line in lines
+            println(wfn,line)
+        end
+        close(wfn)
+
+        meshfile = str1
+        meshfilename_parts=splitpath(meshfile)
+        meshfilename_parts[end]="_" * meshfilename_parts[end]
+        writefilename=joinpath(meshfilename_parts)
+        _meshfile=writefilename
+        len_out=length(notusedsets)
+        notusedsets_out=String[]        
+        if len_out>=1
+            touch(writefilename)
+            wfn = open(writefilename,"w")  
+            for i_out in 1:len_out
+                if i_out==1
+                    notusedsets_out=notusedsets[i_out]
+                else
+                    notusedsets_out=notusedsets_out * "," * notusedsets[i_out] 
+                end
+            end
+            println(wfn,notusedsets_out)
+            close(wfn)
+        else
+            if isfile(writefilename)
+                rm(writefilename)
+            end
+        end       
+
+        simfile = joinpath(mypath,"_simulation_params.csv")
+        writefilename=simfile
+        touch(writefilename)
+        wfn = open(writefilename,"w")  
+        lines=String[]
+        if i_model==1 || i_model==2 || i_model==3
+            push!(lines,"p_ref,rho_ref,gamma,mu_resin,p_a,p_init,rho_0_air,rho_0_oil")
+            push!(lines,string("1.01325e5,1.225,1.4,",str3,",",str4,",",str5,",",str6,",",str7))
+        end
+        for line in lines
+            println(wfn,line)
+        end
+        close(wfn)
+		
+		filename_parts=splitpath(meshfile)
+        _psetfile=joinpath( joinpath(filename_parts[1:end-1]) ,"_pset.csv")
+        __psetfile=joinpath( joinpath(filename_parts[1:end-1]) ,"__pset.csv")
+        if isfile(_psetfile)
+            mv(_psetfile,__psetfile,force=true) 
+        end
+
+        savepath = mypath   
+        t_max = parse(Float64,get_gtk_property(t,:text,String))  #100.
+        t_step = t_max/4
+        i_model=parse(Int,get_gtk_property(par_0,:text,String))  #2
+        if i_model == 1
+            modeltype = LCMsim_v2.model_1
+        elseif i_model == 2         
+            modeltype = LCMsim_v2.model_2
+        else
+            modeltype = LCMsim_v2.model_3
+        end  
+
+        case=LCMsim_v2.create(meshfile,partfile,simfile,modeltype)
+        
+        if isfile(_meshfile)
+            rm(_meshfile)
+        end
+        if isfile(partfile)
+            rm(partfile)
+        end
+        if isfile(simfile)
+            rm(simfile)
+        end
+		if isfile(__psetfile)
+            mv(__psetfile,_psetfile,force=true) 
+        end
+
+        hdf_path=joinpath(mypath,"_data.h5")
+        LCMsim_v2.save_plottable_mesh(case.mesh, hdf_path)
+        LCMsim_v2.save_state(case.state, hdf_path)
+
+        polys::Vector{Polygon} = []
+        gamma::Vector{Float64} = []
+
+        h5open(hdf_path, "r") do meshfile
+
+            grid = read_dataset(meshfile["/mesh"], "vertices")
+            cells = read_dataset(meshfile["/mesh"], "cells")
+            N = size(cells)[1]
+            M = size(grid)[1]
+            xvec=Array{Float64}(undef, 3, N)
+            yvec=Array{Float64}(undef, 3, N)
+            zvec=Array{Float64}(undef, 3, N)
+            xvec1=Array{Float64}(undef, M)
+            yvec1=Array{Float64}(undef, M)
+            zvec1=Array{Float64}(undef, M)
+            xvec2=Array{Float64}(undef, N)
+            yvec2=Array{Float64}(undef, N)
+            zvec2=Array{Float64}(undef, N)
+            cgammavec=Array{Float64}(undef, 3, N)
+            cgammavec_bw=Array{Float64}(undef, 3, N)
 
 
+            for cid in 1:N
+                points::Vector{Point2f} = []
+                for j in 1:3
+                    gid = cells[cid, j]
+                    x = grid[gid, 1]
+                    y = grid[gid, 2]
+                    z = grid[gid, 3]
+                    push!(points, Point2f(x, y))            
+                    xvec[j,cid]=x
+                    yvec[j,cid]=y
+                    zvec[j,cid]=z
+                    cgammavec[j,cid]=1.0
+                    cgammavec_bw[j,cid]=1.0
+                end
+                push!(polys, Polygon(points))
+            end
+            xyz = reshape([xvec[:] yvec[:] zvec[:]]', :)
+
+            states = keys(meshfile["/"])
+            states = filter(s -> s[1:3] == "sta", states)
+            
+            gammas = [read_dataset(meshfile["/" * state], "gamma") for state in states]
+
+            gamma = read_dataset(meshfile["properties"], "part_id")
+            gamma = gamma*0.
+
+            cgammasvec=Array{Float64}(undef, 3, N,length(gammas))
+            cgammasvec_bw=Array{Float64}(undef, 3, N,length(gammas))
+            for tid in 1:length(gammas)
+                for cid in 1:N
+                    for j in 1:3
+                        cgammasvec[j,cid,tid]=gammas[tid][cid]
+                        if cgammasvec[j,cid,tid]>=0.8;
+                            cgammasvec_bw[j,cid,tid]=1.0
+                        else
+                            cgammasvec_bw[j,cid,tid]=0.0
+                        end
+                    end
+                end
+            end
+            cgammavec=cgammasvec[:,:,length(gammas)]
+            cgammavec_bw=cgammasvec_bw[:,:,length(gammas)]
+
+            times = [read_attribute(meshfile["/" * state], "t") for state in states]
+            
+            #bounding box
+            deltax=maximum(xvec)-minimum(xvec)
+            deltay=maximum(yvec)-minimum(yvec)
+            deltaz=maximum(zvec)-minimum(zvec)
+            mindelta=min(deltax,deltay,deltaz)
+            maxdelta=max(deltax,deltay,deltaz)
+            if mindelta<maxdelta*0.001
+                eps_delta=maxdelta*0.001
+            else
+                eps_delta=0
+            end 
+            ax=(deltax+eps_delta)/(mindelta+eps_delta)
+            ay=(deltay+eps_delta)/(mindelta+eps_delta)
+            az=(deltaz+eps_delta)/(mindelta+eps_delta)
+
+            points1::Vector{Point3f0} = []
+            #use cell centers instead
+            for cid in 1:N
+                xvec2[cid]=0.
+                yvec2[cid]=0.
+                zvec2[cid]=0.
+                for j in 1:3
+                    gid = cells[cid, j]
+                    x = grid[gid, 1]
+                    y = grid[gid, 2]
+                    z = grid[gid, 3]
+                    xvec2[cid]=xvec2[cid]+0.3333*x
+                    yvec2[cid]=yvec2[cid]+0.3333*y
+                    zvec2[cid]=zvec2[cid]+0.3333*z
+                end
+            end
+            points1=rand(Point3f0, length(xvec2))
+            for i in 1:length(xvec2)
+                points1[i]=Point3f0(xvec2[i],yvec2[i],zvec2[i])
+            end
+
+            positions = Observable(points1) 
+            inletpos_xyz=Array{Float64}[]
+
+            resolution_val = 800 
+            markersizeval=20 
+            empty!(ax1)    
+            p1 = poly!(connect(xyz, GeometryBasics.Point{3}), connect(1:3*N, TriangleFace); color=:white, strokewidth=1,colorrange=(0,1))
+            fig2=scatter!(positions,markersize=markersizeval,color = :blue)
+            vec=[1 0 0];
+			fig1=current_figure();
+            [delete!(col1) for col1 in fig1.content if col1 isa Colorbar]
+
+            on(events(fig2).mousebutton, priority = 2) do event
+                if length(inletpos_xyz)<=1
+                    if event.button == Mouse.left && event.action == Mouse.press
+                        if Keyboard.p in events(fig2).keyboardstate
+                            plt, i = pick(fig2,events(fig2).mouseposition[])
+                            if plt == fig2  #p2
+                                t_div=100;
+                                xpos=positions[][i][1];
+                                ypos=positions[][i][2];
+                                zpos=positions[][i][3];
+                                inletpos_xyz=push!(inletpos_xyz,[xpos ypos zpos])
+                                textpos=string( string(round(t_div*xpos)/t_div) , "," , string(round(t_div*ypos)/t_div) , "," , string(round(t_div*zpos)/t_div)  )
+                                t1=text!(ax1,textpos,position = (xpos,ypos,zpos) ) 
+                                scatter!(Point3f0(xpos,ypos,zpos),markersize=2*markersizeval,color = :black)
+                                if length(inletpos_xyz)==2
+                                    vec=[inletpos_xyz[2][1]-inletpos_xyz[1][1] inletpos_xyz[2][2]-inletpos_xyz[1][2] inletpos_xyz[2][3]-inletpos_xyz[1][3]]
+                                    vec1=vec/sqrt(dot(vec,vec))
+                                    str=string( string( round(vec1[1]*100)/100 ), ", ",  string( round(vec1[2]*100)/100 ), ", ", string( round(vec1[3]*100)/100 ) )
+                                    set_gtk_property!(dir,:text,str)
+                                end
+                            end
+                        end
+                    end
+                    return Consume(false)
+                end
+            end
+            
+        end
+        rm(hdf_path)
+    end
+    function r1_clicked(w)
+        ax1=current_axis()
+        center!(ax1.scene)
+    end
+    function r2_clicked(w)
+        str0 = get_gtk_property(par_0,:text,String); 
+        str1 = get_gtk_property(mf,:text,String); str2 = get_gtk_property(t,:text,String); str3 = get_gtk_property(par_3,:text,String); str4 = get_gtk_property(par_1,:text,String); str5 = get_gtk_property(par_2,:text,String); str6 = get_gtk_property(par_4,:text,String); str7 = get_gtk_property(par_5,:text,String);
+        str11 = get_gtk_property(p0_1,:text,String); str12 = get_gtk_property(p0_2,:text,String); str13 = get_gtk_property(p0_3,:text,String); str14 = get_gtk_property(p0_4,:text,String); str15 = get_gtk_property(p0_5,:text,String); str16 = get_gtk_property(p0_6,:text,String); str17 = get_gtk_property(p0_7,:text,String); str18 = get_gtk_property(p0_8,:text,String); str19 = get_gtk_property(p0_9,:text,String);
+        str21 = get_gtk_property(p1_1,:text,String); str22 = get_gtk_property(p1_2,:text,String); str23 = get_gtk_property(p1_3,:text,String); str24 = get_gtk_property(p1_4,:text,String); str25 = get_gtk_property(p1_5,:text,String); str26 = get_gtk_property(p1_6,:text,String); str27 = get_gtk_property(p1_7,:text,String); str28 = get_gtk_property(p1_8,:text,String); str29 = get_gtk_property(p1_9,:text,String);
+        str31 = get_gtk_property(p2_1,:text,String); str32 = get_gtk_property(p2_2,:text,String); str33 = get_gtk_property(p2_3,:text,String); str34 = get_gtk_property(p2_4,:text,String); str35 = get_gtk_property(p2_5,:text,String); str36 = get_gtk_property(p2_6,:text,String); str37 = get_gtk_property(p2_7,:text,String); str38 = get_gtk_property(p2_8,:text,String); str39 = get_gtk_property(p2_9,:text,String);
+        str41 = get_gtk_property(p3_1,:text,String); str42 = get_gtk_property(p3_2,:text,String); str43 = get_gtk_property(p3_3,:text,String); str44 = get_gtk_property(p3_4,:text,String); str45 = get_gtk_property(p3_5,:text,String); str46 = get_gtk_property(p3_6,:text,String); str47 = get_gtk_property(p3_7,:text,String); str48 = get_gtk_property(p3_8,:text,String); str49 = get_gtk_property(p3_9,:text,String);
+        str51 = get_gtk_property(p4_1,:text,String); str52 = get_gtk_property(p4_2,:text,String); str53 = get_gtk_property(p4_3,:text,String); str54 = get_gtk_property(p4_4,:text,String); str55 = get_gtk_property(p4_5,:text,String); str56 = get_gtk_property(p4_6,:text,String); str57 = get_gtk_property(p4_7,:text,String); str58 = get_gtk_property(p4_8,:text,String); str59 = get_gtk_property(p4_9,:text,String);
+        if f1.selected==0; patchtype1val=Int64(0); elseif f1.selected==1; patchtype1val=Int64(1); elseif f1.selected==2; patchtype1val=Int64(3); elseif f1.selected==3; patchtype1val=Int64(2); end
+        if f2.selected==0; patchtype2val=Int64(0); elseif f2.selected==1; patchtype2val=Int64(1); elseif f2.selected==2; patchtype2val=Int64(3); elseif f2.selected==3; patchtype2val=Int64(2); end
+        if f3.selected==0; patchtype3val=Int64(0); elseif f3.selected==1; patchtype3val=Int64(1); elseif f3.selected==2; patchtype3val=Int64(3); elseif f3.selected==3; patchtype3val=Int64(2); end
+        if f4.selected==0; patchtype4val=Int64(0); elseif f4.selected==1; patchtype4val=Int64(1); elseif f4.selected==2; patchtype4val=Int64(3); elseif f4.selected==3; patchtype4val=Int64(2); end
+        #if [get_gtk_property(b,:active,Bool) for b in r1] == [true, false, false, false]; patchtype1val=Int64(0);    elseif [get_gtk_property(b,:active,Bool) for b in r1] == [false, true, false, false]; patchtype1val=Int64(1);    elseif [get_gtk_property(b,:active,Bool) for b in r1] == [false, false, true, false]; patchtype1val=Int64(3);    elseif [get_gtk_property(b,:active,Bool) for b in r1] == [false, false, false, true]; patchtype1val=Int64(2); end;
+        #if [get_gtk_property(b,:active,Bool) for b in r2] == [true, false, false, false]; patchtype2val=Int64(0);    elseif [get_gtk_property(b,:active,Bool) for b in r2] == [false, true, false, false]; patchtype2val=Int64(1);    elseif [get_gtk_property(b,:active,Bool) for b in r2] == [false, false, true, false]; patchtype2val=Int64(3);    elseif [get_gtk_property(b,:active,Bool) for b in r2] == [false, false, false, true]; patchtype2val=Int64(2); end;
+        #if [get_gtk_property(b,:active,Bool) for b in r3] == [true, false, false, false]; patchtype3val=Int64(0);    elseif [get_gtk_property(b,:active,Bool) for b in r3] == [false, true, false, false]; patchtype3val=Int64(1);    elseif [get_gtk_property(b,:active,Bool) for b in r3] == [false, false, true, false]; patchtype3val=Int64(3);    elseif [get_gtk_property(b,:active,Bool) for b in r3] == [false, false, false, true]; patchtype3val=Int64(2); end;
+        #if [get_gtk_property(b,:active,Bool) for b in r4] == [true, false, false, false]; patchtype4val=Int64(0);    elseif [get_gtk_property(b,:active,Bool) for b in r4] == [false, true, false, false]; patchtype4val=Int64(1);    elseif [get_gtk_property(b,:active,Bool) for b in r4] == [false, false, true, false]; patchtype4val=Int64(3);    elseif [get_gtk_property(b,:active,Bool) for b in r4] == [false, false, false, true]; patchtype4val=Int64(2); end;
+        str61 = get_gtk_property(r,:text,String)
+        restartval=Int64(0); interactiveval=Int64(0); noutval=Int64(16); 
+        modelval=parse(Int64,str0);
+        str1_1 = get_gtk_property(mf1,:text,String); 
+
+        #coloring of mesh: 0..none, 1..thickness, 2..porosity, 3..permeability, 4..alpha
+        i_var_in=mf3.selected
+        if i_var_in>=0 && i_var_in<=4
+            i_var=i_var_in
+        else
+            i_var=0
+        end 
+
+        if i_batch==1
+            meshfile=get_gtk_property(mf,:text,String);
+            partfile=get_gtk_property(in2,:text,String);
+            simfile=get_gtk_property(in2a,:text,String);
+            meshfilename_parts=splitpath(meshfile)
+            meshfilename_parts[end]="_" * meshfilename_parts[end]
+            writefilename=joinpath(meshfilename_parts)
+            _meshfile=writefilename
+            if isfile(_meshfile)
+                rm(_meshfile)
+            end
+            filename_parts=splitpath(meshfile)
+            _psetfile=joinpath( joinpath(filename_parts[1:end-1]) ,"_pset.csv")
+            __psetfile=joinpath( joinpath(filename_parts[1:end-1]) ,"__pset.csv")
+            if isfile(_psetfile)
+                mv(_psetfile,__psetfile,force=true) 
+            end
+        else
+            partfile = joinpath(mypath,"_part_description.csv")
+            writefilename=partfile
+            touch(writefilename)
+            wfn = open(writefilename,"w")  
+            lines=String[]
+            notusedsets = Vector{String}()
+            i_model=parse(Int,get_gtk_property(par_0,:text,String))  #2
+            if i_model==1 || i_model==2 || i_model==3
+                push!(lines,"name,type,part_id,thickness,porosity,porosity_noise,permeability,permeability_noise,alpha,refdir1,refdir2,refdir3,porosity_1,p_1")
+                push!(lines,string("base,base,1,",str11,",",str12,",0.0,",str13,",0.0,",str14,",",str15,",",str16,",",str17,",",str12,",","1e5"))
+                #if patchtype1val==0
+                    push!(notusedsets, "2")
+                #else
+                #    if patchtype1val==1
+                #        patchtype="inlet"
+                #    elseif patchtype1val==2
+                #        patchtype="patch"
+                #    elseif patchtype1val==3
+                #        patchtype="outlet"
+                #    end
+                #    push!(lines,string("patch1,", patchtype,",2,",str21,",",str22,",0.0,",str23,",0.0,",str24,",",str25,",",str26,",",str27,",",str22,",","1e5"))
+                #end
+                #if patchtype2val==0
+                    push!(notusedsets, "3")
+                #else
+                #    if patchtype2val==1
+                #        patchtype="inlet"
+                #    elseif patchtype2val==2
+                #        patchtype="patch"
+                #    elseif patchtype2val==3
+                #        patchtype="outlet"
+                #    end
+                #    push!(lines,string("patch2,", patchtype,",3,",str21,",",str22,",0.0,",str23,",0.0,",str24,",",str25,",",str26,",",str27,",",str22,",","1e5"))
+                #end
+                #if patchtype3val==0
+                    push!(notusedsets, "4")
+                #else
+                #    if patchtype3val==1
+                #        patchtype="inlet"
+                #    elseif patchtype3val==2
+                #        patchtype="patch"
+                #    elseif patchtype3val==3
+                #        patchtype="outlet"
+                #    end
+                #    push!(lines,string("patch3,", patchtype,",4,",str31,",",str32,",0.0,",str33,",0.0,",str34,",",str35,",",str36,",",str37,",",str32,",","1e5"))
+                #end
+                #if patchtype4val==0
+                    push!(notusedsets, "5")
+                #else
+                #    if patchtype4val==1
+                #        patchtype="inlet"
+                #    elseif patchtype4val==2
+                #        patchtype="patch"
+                #    elseif patchtype4val==3
+                #        patchtype="outlet"
+                #    end
+                #    push!(lines,string("patch4,", patchtype,",5,",str41,",",str42,",0.0,",str43,",0.0,",str44,",",str45,",",str46,",",str47,",",str42,",","1e5"))
+                #end
+            end
+            for line in lines
+                println(wfn,line)
+            end
+            close(wfn)
+
+            meshfile = str1
+            meshfilename_parts=splitpath(meshfile)
+            meshfilename_parts[end]="_" * meshfilename_parts[end]
+            writefilename=joinpath(meshfilename_parts)
+            _meshfile=writefilename
+            len_out=length(notusedsets)
+            notusedsets_out=String[]        
+            if len_out>=1
+                touch(writefilename)
+                wfn = open(writefilename,"w")  
+                for i_out in 1:len_out
+                    if i_out==1
+                        notusedsets_out=notusedsets[i_out]
+                    else
+                        notusedsets_out=notusedsets_out * "," * notusedsets[i_out] 
+                    end
+                end
+                println(wfn,notusedsets_out)
+                close(wfn)
+            else
+                if isfile(writefilename)
+                    rm(writefilename)
+                end
+            end       
+
+            simfile = joinpath(mypath,"_simulation_params.csv")
+            writefilename=simfile
+            touch(writefilename)
+            wfn = open(writefilename,"w")  
+            lines=String[]
+            if i_model==1 || i_model==2 || i_model==3
+                push!(lines,"p_ref,rho_ref,gamma,mu_resin,p_a,p_init,rho_0_air,rho_0_oil")
+                push!(lines,string("1.01325e5,1.225,1.4,",str3,",",str4,",",str5,",",str6,",",str7))
+            end
+            for line in lines
+                println(wfn,line)
+            end
+            close(wfn)
+
+            filename_parts=splitpath(meshfile)
+            _psetfile=joinpath( joinpath(filename_parts[1:end-1]) ,"_pset.csv")
+            __psetfile=joinpath( joinpath(filename_parts[1:end-1]) ,"__pset.csv")
+            if isfile(_psetfile)
+                mv(_psetfile,__psetfile,force=true) 
+            end
+        end
+
+        savepath = mypath   
+        t_max = parse(Float64,get_gtk_property(t,:text,String))  #100.
+        t_step = t_max/4
+        i_model=parse(Int,get_gtk_property(par_0,:text,String))  #2
+        if i_model == 1
+            modeltype = LCMsim_v2.model_1
+        elseif i_model == 2         
+            modeltype = LCMsim_v2.model_2
+        else
+            modeltype = LCMsim_v2.model_3
+        end  
+        case=LCMsim_v2.create(meshfile,partfile,simfile,modeltype)
+            
+        if i_batch==0
+            if isfile(_meshfile)
+                rm(_meshfile)
+            end
+            if isfile(partfile)
+                rm(partfile)
+            end
+            if isfile(simfile)
+                rm(simfile)
+            end
+            if isfile(__psetfile)
+                mv(__psetfile,_psetfile,force=true) 
+            end
+        elseif i_batch==1
+            if isfile(__psetfile)
+                mv(__psetfile,_psetfile,force=true) 
+            end
+        end
 
 
+        hdf_path=joinpath(mypath,"_data.h5")
+        LCMsim_v2.save_plottable_mesh(case.mesh, hdf_path)
+        LCMsim_v2.save_state(case.state, hdf_path)
+            
+        polys::Vector{Polygon} = []
+        gamma::Vector{Float64} = []
+        
+        deltax=0.0
+        deltay=0.0
+        deltaz=0.0
+        h5open(hdf_path, "r") do meshfile
+        
+            grid = read_dataset(meshfile["/mesh"], "vertices")
+            cells = read_dataset(meshfile["/mesh"], "cells")
+            N = size(cells)[1]
+            M = size(grid)[1]
+            xvec=Array{Float64}(undef, 3, N)
+            yvec=Array{Float64}(undef, 3, N)
+            zvec=Array{Float64}(undef, 3, N)            
+            xvec1=Array{Float64}(undef, M)
+            yvec1=Array{Float64}(undef, M)
+            zvec1=Array{Float64}(undef, M)
+            cgammavec=Array{Float64}(undef, 3, N)
+            cgammavec_bw=Array{Float64}(undef, 3, N)
+        
+        
+            for cid in 1:N
+                points::Vector{Point2f} = []
+                for j in 1:3
+                    gid = cells[cid, j]
+                    x = grid[gid, 1]
+                    y = grid[gid, 2]
+                    z = grid[gid, 3]
+                    push!(points, Point2f(x, y))            
+                    xvec[j,cid]=x
+                    yvec[j,cid]=y
+                    zvec[j,cid]=z
+                    cgammavec[j,cid]=1.0
+                    cgammavec_bw[j,cid]=1.0
+                end
+                push!(polys, Polygon(points))
+            end
+            xyz = reshape([xvec[:] yvec[:] zvec[:]]', :)
+        
+            states = keys(meshfile["/"])
+            states = filter(s -> s[1:3] == "sta", states)
+            
+            gammas = [read_dataset(meshfile["/" * state], "gamma") for state in states]
+            #gammas = [read_dataset(meshfile["/" * state], "p") for state in states]
+        
+            if i_var==0
+                gamma = read_dataset(meshfile["properties"], "thickness")
+                gamma = gamma*0.0  #uniform color
+            elseif i_var==1
+                gamma = read_dataset(meshfile["properties"], "thickness")
+            elseif i_var==2
+                gamma = read_dataset(meshfile["properties"], "porosity")
+            elseif i_var==3
+                gamma = read_dataset(meshfile["properties"], "permeability")
+            elseif i_var==4
+                gamma = read_dataset(meshfile["properties"], "alpha")
+            end
+        
+            cgammasvec=Array{Float64}(undef, 3, N)
+            cgammasvec_bw=Array{Float64}(undef, 3, N)
+            for cid in 1:N
+                for j in 1:3
+                    cgammavec[j,cid]=gamma[cid]
+                    cgammavec_bw[j,cid]=gamma[cid]
+                end
+            end
+            
+            #bounding box
+            deltax=maximum(xvec)-minimum(xvec)
+            deltay=maximum(yvec)-minimum(yvec)
+            deltaz=maximum(zvec)-minimum(zvec)
+        end
+        rm(hdf_path)       
 
+        arrow_lengthscale=0.1*max(deltax,deltay,deltaz)
+        arrow_linewidth=arrow_lengthscale*0.1
+        arrow_arrowsize=2*arrow_linewidth
 
+        CS_x=arrows!([0],[0],[0],[1],[0],[0],color=:red,linewidth = arrow_linewidth,arrowsize=arrow_arrowsize,lengthscale=arrow_lengthscale)
+        CS_y=arrows!([0],[0],[0],[0],[1],[0],color=:green,linewidth = arrow_linewidth,arrowsize=arrow_arrowsize,lengthscale=arrow_lengthscale)
+        CS_z=arrows!([0],[0],[0],[0],[0],[1],color=:blue,linewidth = arrow_linewidth,arrowsize=arrow_arrowsize,lengthscale=arrow_lengthscale)
 
-
+    end
+    function q_clicked(w)
+        exit()
+    end
 
     #callbacks
     signal_connect(sm_clicked,sm,"clicked")
@@ -2206,4 +2763,13 @@ i_batch=0;i_model=2;i_mesh=1;mypath="D:\\work\\github\\LCMsim_GUI\\gui_and_cases
     signal_connect(in1_clicked,in1,"clicked")
     signal_connect(in1a_clicked,in1a,"clicked")
     signal_connect(in3_clicked,in3,"clicked")
+    signal_connect(a0_1_clicked,a0_1,"clicked")
+    signal_connect(a1_1_clicked,a1_1,"clicked")
+    signal_connect(a2_1_clicked,a2_1,"clicked")
+    signal_connect(a3_1_clicked,a3_1,"clicked")
+    signal_connect(a4_1_clicked,a4_1,"clicked")
+    signal_connect(seldir_clicked,seldir,"clicked")
+    signal_connect(r1_clicked,r1,"clicked")
+    signal_connect(r2_clicked,r2,"clicked")
+    signal_connect(q_clicked,q,"clicked")
 

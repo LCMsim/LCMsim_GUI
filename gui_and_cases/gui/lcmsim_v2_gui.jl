@@ -8,7 +8,7 @@ using GeometryBasics
 using HDF5
 
 #for testing purpose only
-#i_batch=0;i_model=2;i_mesh=1;mypath="D:\\work\\github\\LCMsim_GUI\\gui_and_cases\\cases";repositorypath="D:\\work\\github\\LCMsim_v2.jl";guipath="D:\\work\\github\\lcmsim_gui\\gui_and_cases\\gui"
+i_batch=0;i_model=2;i_mesh=1;mypath="D:\\work\\github\\LCMsim_GUI\\gui_and_cases\\cases";repositorypath="D:\\work\\github\\LCMsim_v2.jl";guipath="D:\\work\\github\\lcmsim_gui\\gui_and_cases\\gui"
 
     @info "i_batch = $i_batch"
     @info "i_model = $i_model"
@@ -2345,5 +2345,3 @@ using HDF5
         end
         wait(c)
     end
-
-

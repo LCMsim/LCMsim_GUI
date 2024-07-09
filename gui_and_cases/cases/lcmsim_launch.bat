@@ -1,2 +1,2 @@
-julia lcmsim_config.jl
+julia -L lcmsim_config.jl
                
