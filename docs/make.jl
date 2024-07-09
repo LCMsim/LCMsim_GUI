@@ -1,6 +1,6 @@
 import Pkg; Pkg.add("Documenter")
 push!(LOAD_PATH,"../src/")
-using Documenter  #, lcmsim
+using Documenter 
 
-makedocs(sitename="LCMsim"
+makedocs(sitename="LCMsim v2"
          )
