@@ -1,7 +1,7 @@
 # Installation 
 
 The intended operating system for LCMsim v2 is Windows. The software was extensively tested for Windows 10. In order to use LCMsim v2 for filling simulations perform the following steps:
-- Download LCMsim v2: [Latest release](assets/LCMsim_v2_latestrelease.zip)
+- Download LCMsim v2: [Latest release](../assets/LCMsim_v2_latestrelease.zip)
 - Extract and double click on the batch file to install the missing Julia packages
 ```@raw html
 <img src="assets/figures/fig_installation_001.png">
@@ -18,6 +18,6 @@ include(joinpath(guipath,"lcmsim_v2_gui_gtk4.jl"))
 ```
 - Launch the GUI in the cases folder :
 ```@raw html
-<img src="assets/figures/fig_installation_002.png">
+<img src="../assets/figures/fig_installation_002.png">
 ```
 -Different GUI layout but same functionalities
