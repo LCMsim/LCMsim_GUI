@@ -1,5 +1,7 @@
 # Tutorials
-The following video tutorials give you an overview on how to perform filling simulations with LCMsim.
+The tutorials can be useful although they are still for LCMsim:
+- Slides from a basic training: [Download](https://www.obertscheider.com/download/LCMsim_basic_training.pdf)
+- The following video tutorials give you an overview on how to perform filling simulations with LCMsim.
 
 
 ## Software installation
