@@ -7,7 +7,7 @@ using NativeFileDialog
 using LinearAlgebra
 
 #for testing purpose only
-#i_batch=0;i_model=2;i_mesh=1;mypath="D:\\work\\github\\LCMsim_GUI\\gui_and_cases\\cases";repositorypath="D:\\work\\github\\LCMsim_v2.jl";guipath="D:\\work\\github\\lcmsim_gui\\gui_and_cases\\gui"
+i_batch=0;i_model=2;i_mesh=1;mypath="D:\\work\\github\\LCMsim_GUI\\gui_and_cases\\cases";repositorypath="D:\\work\\github\\LCMsim_v2.jl";guipath="D:\\work\\github\\lcmsim_gui\\gui_and_cases\\gui"
 
     @info "i_batch = $i_batch"
     @info "i_model = $i_model"
@@ -455,15 +455,15 @@ using LinearAlgebra
             ay=(deltay+eps_delta)/(mindelta+eps_delta)
             az=(deltaz+eps_delta)/(mindelta+eps_delta)
             
-            points1::Vector{Point3f0} = []
+            points1::Vector{Point3f} = []
             for gid in 1:M        
                     xvec1[gid]=grid[gid, 1]
                     yvec1[gid]=grid[gid, 2]
                     zvec1[gid]=grid[gid, 3]
             end
-            points1=rand(Point3f0, length(xvec1))
+            points1=rand(Point3f, length(xvec1))
             for i in 1:length(xvec1)
-                points1[i]=Point3f0(xvec1[i],yvec1[i],zvec1[i])
+                points1[i]=Point3f(xvec1[i],yvec1[i],zvec1[i])
             end
         
             maxval=maximum(cgammavec[:])
@@ -755,15 +755,15 @@ using LinearAlgebra
             ay=(deltay+eps_delta)/(mindelta+eps_delta)
             az=(deltaz+eps_delta)/(mindelta+eps_delta)
 
-            points1::Vector{Point3f0} = []
+            points1::Vector{Point3f} = []
             for gid in 1:M        
                     xvec1[gid]=grid[gid, 1]
                     yvec1[gid]=grid[gid, 2]
                     zvec1[gid]=grid[gid, 3]
             end
-            points1=rand(Point3f0, length(xvec1))
+            points1=rand(Point3f, length(xvec1))
             for i in 1:length(xvec1)
-                points1[i]=Point3f0(xvec1[i],yvec1[i],zvec1[i])
+                points1[i]=Point3f(xvec1[i],yvec1[i],zvec1[i])
             end
 
             maxval=maximum(cgammavec[:])
@@ -990,7 +990,7 @@ using LinearAlgebra
             ay=(deltay+eps_delta)/(mindelta+eps_delta)
             az=(deltaz+eps_delta)/(mindelta+eps_delta)
 
-            points1::Vector{Point3f0} = []
+            points1::Vector{Point3f} = []
             #use cell centers instead
             for cid in 1:N
                 xvec2[cid]=0.
@@ -1006,9 +1006,9 @@ using LinearAlgebra
                     zvec2[cid]=zvec2[cid]+0.3333*z
                 end
             end
-            points1=rand(Point3f0, length(xvec2))
+            points1=rand(Point3f, length(xvec2))
             for i in 1:length(xvec2)
-                points1[i]=Point3f0(xvec2[i],yvec2[i],zvec2[i])
+                points1[i]=Point3f(xvec2[i],yvec2[i],zvec2[i])
             end
 
             positions = Observable(points1) 
@@ -1037,7 +1037,7 @@ using LinearAlgebra
                             wfn = open(writefilename,"a")  
                             println(wfn,textpos)
                             close(wfn)
-                            scatter!(Point3f0(xpos,ypos,zpos),markersize=2*markersizeval,color = :black)
+                            scatter!(Point3f(xpos,ypos,zpos),markersize=2*markersizeval,color = :black)
                             return Consume(true)
                         end
                     end
@@ -2400,7 +2400,7 @@ using LinearAlgebra
             ay=(deltay+eps_delta)/(mindelta+eps_delta)
             az=(deltaz+eps_delta)/(mindelta+eps_delta)
 
-            points1::Vector{Point3f0} = []
+            points1::Vector{Point3f} = []
             #use cell centers instead
             for cid in 1:N
                 xvec2[cid]=0.
@@ -2416,9 +2416,9 @@ using LinearAlgebra
                     zvec2[cid]=zvec2[cid]+0.3333*z
                 end
             end
-            points1=rand(Point3f0, length(xvec2))
+            points1=rand(Point3f, length(xvec2))
             for i in 1:length(xvec2)
-                points1[i]=Point3f0(xvec2[i],yvec2[i],zvec2[i])
+                points1[i]=Point3f(xvec2[i],yvec2[i],zvec2[i])
             end
 
             positions = Observable(points1) 
@@ -2446,7 +2446,7 @@ using LinearAlgebra
                                 inletpos_xyz=push!(inletpos_xyz,[xpos ypos zpos])
                                 textpos=string( string(round(t_div*xpos)/t_div) , "," , string(round(t_div*ypos)/t_div) , "," , string(round(t_div*zpos)/t_div)  )
                                 t1=text!(ax1,textpos,position = (xpos,ypos,zpos) ) 
-                                scatter!(Point3f0(xpos,ypos,zpos),markersize=2*markersizeval,color = :black)
+                                scatter!(Point3f(xpos,ypos,zpos),markersize=2*markersizeval,color = :black)
                                 if length(inletpos_xyz)==2
                                     vec=[inletpos_xyz[2][1]-inletpos_xyz[1][1] inletpos_xyz[2][2]-inletpos_xyz[1][2] inletpos_xyz[2][3]-inletpos_xyz[1][3]]
                                     vec1=vec/sqrt(dot(vec,vec))
