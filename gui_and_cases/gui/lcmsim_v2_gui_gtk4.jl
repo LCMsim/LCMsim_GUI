@@ -278,31 +278,39 @@ using LinearAlgebra
             if i_model==1 || i_model==2 || i_model==3
                 push!(lines,"name,type,part_id,thickness,porosity,porosity_noise,permeability,permeability_noise,alpha,refdir1,refdir2,refdir3,porosity_1,p_1")
                 push!(lines,string("base,base,1,",str11,",",str12,",0.0,",str13,",0.0,",str14,",",str15,",",str16,",",str17,",",str12,",","1e5"))
-                push!(notusedsets, "6")				
-		if patchtype1val==0 || patchtype1val==1 || patchtype1val==3
-                    push!(notusedsets, "2")
-                else
-                    patchtype="patch"
-                    push!(lines,string("patch1,", patchtype,",2,",str21,",",str22,",0.0,",str23,",0.0,",str24,",",str25,",",str26,",",str27,",",str22,",","1e5"))
+                if i_var==0
+                    push!(notusedsets, "2")    
+                    push!(notusedsets, "3")    
+                    push!(notusedsets, "4")    
+                    push!(notusedsets, "5")    
+                    push!(notusedsets, "6")    
+                    else
+                    push!(notusedsets, "6")                
+                    if patchtype1val==0 || patchtype1val==1 || patchtype1val==3
+                        push!(notusedsets, "2")
+                    else
+                        patchtype="patch"
+                        push!(lines,string("patch1,", patchtype,",2,",str21,",",str22,",0.0,",str23,",0.0,",str24,",",str25,",",str26,",",str27,",",str22,",","1e5"))
+                    end
+                    if patchtype2val==0 || patchtype2val==1 || patchtype2val==3
+                        push!(notusedsets, "3")
+                    else
+                        patchtype="patch"
+                        push!(lines,string("patch2,", patchtype,",3,",str31,",",str32,",0.0,",str33,",0.0,",str34,",",str35,",",str36,",",str37,",",str32,",","1e5"))
+                    end
+                    if patchtype3val==0 || patchtype3val==1 || patchtype3val==3
+                        push!(notusedsets, "4")
+                    else
+                        patchtype="patch"
+                        push!(lines,string("patch3,", patchtype,",4,",str41,",",str42,",0.0,",str43,",0.0,",str44,",",str45,",",str46,",",str47,",",str42,",","1e5"))
+                    end
+                    if patchtype4val==0 || patchtype4val==1 || patchtype4val==3
+                        push!(notusedsets, "5")
+                    else
+                        patchtype="patch"
+                        push!(lines,string("patch4,", patchtype,",5,",str51,",",str52,",0.0,",str53,",0.0,",str54,",",str55,",",str56,",",str57,",",str52,",","1e5"))
+                    end
                 end
-                if patchtype2val==0 || patchtype2val==1 || patchtype2val==3
-                    push!(notusedsets, "3")
-                else
-                    patchtype="patch"
-                    push!(lines,string("patch2,", patchtype,",3,",str31,",",str32,",0.0,",str33,",0.0,",str34,",",str35,",",str36,",",str37,",",str32,",","1e5"))
-                end
-                if patchtype3val==0 || patchtype3val==1 || patchtype3val==3
-                    push!(notusedsets, "4")
-                else
-                    patchtype="patch"
-                    push!(lines,string("patch3,", patchtype,",4,",str41,",",str42,",0.0,",str43,",0.0,",str44,",",str45,",",str46,",",str47,",",str42,",","1e5"))
-                end
-                if patchtype4val==0 || patchtype4val==1 || patchtype4val==3
-                    push!(notusedsets, "5")
-                else
-                    patchtype="patch"
-                    push!(lines,string("patch4,", patchtype,",5,",str51,",",str52,",0.0,",str53,",0.0,",str54,",",str55,",",str56,",",str57,",",str52,",","1e5"))
-                end			
             end
             for line in lines
                 println(wfn,line)
