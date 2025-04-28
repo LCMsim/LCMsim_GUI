@@ -6,8 +6,8 @@ using GeometryBasics
 using NativeFileDialog
 using LinearAlgebra
 
-#for testing purpose only
-#i_batch=0;i_model=2;i_mesh=1;mypath="D:\\work\\github\\LCMsim_GUI\\gui_and_cases\\cases";repositorypath="D:\\work\\github\\LCMsim_v2.jl";guipath="D:\\work\\github\\lcmsim_gui\\gui_and_cases\\gui"
+#uncomment next line for testing purpose only
+i_batch=0;i_model=2;i_mesh=1;mypath="D:\\work\\github\\LCMsim_GUI\\gui_and_cases\\cases";repositorypath="D:\\work\\github\\LCMsim_v2.jl";guipath="D:\\work\\github\\lcmsim_gui\\gui_and_cases\\gui"
 
     @info "i_batch = $i_batch"
     @info "i_model = $i_model"
@@ -157,6 +157,13 @@ using LinearAlgebra
     idx4 = f4.selected
     end
 
+    choices_advanced = ["Fast",  "Standard", "Accurate" ]
+    f11 = GtkDropDown(choices_advanced)
+    f11.selected = 1
+    signal_connect(f11, "notify::selected") do widget, others...
+    idx11 = f11.selected
+    end
+
     im=Gtk4.GtkImage(joinpath(guipath,"figures","square_100x100px.png"))
     im1=Gtk4.GtkImage(joinpath(guipath,"figures","square_100x100px.png"))
     im2=Gtk4.GtkImage(joinpath(guipath,"figures","square_100x100px.png"))
@@ -171,8 +178,8 @@ using LinearAlgebra
                                          g[4,4] = mf3; g[5,4] = r2; 
                                          g[4,5] = mf2;  
                                                        g[5,6] = im;
-    g[1,7]=r;g[2,7]=sel;   
-    g[1,8]=t;g[2,8]=ss;g[3,8]=cs;
+    g[1,7]=r;g[2,7]=sel;                                                        
+    g[1,8]=t;g[2,8]=ss;g[3,8]=cs;                                               g[6,8]=f11
              g[2,9]=si;g[3,9]=ci;
     g[1,10]=ra; g[2,10]=pr;g[3,10]=pf1;
                g[2,11]=pr3;g[3,11]=tend;
@@ -202,7 +209,7 @@ using LinearAlgebra
         g[4,5] = mf3;  
         g[4,6] = mf2;  
         g[4,7] = im;
-        g[1,8] = par_0; g[2,8] = t;  g[3,8] = in3;  
+        g[1,8] = par_0; g[2,8] = t;  g[3,8] = in3;                                        g[6,8]=f11
         g[1,9]=ra; g[2,9]=pr;g[3,9]=pf1;
                g[2,10]=pr3;g[3,10]=tend;
     end
@@ -241,6 +248,7 @@ using LinearAlgebra
         restartval=Int64(0); interactiveval=Int64(0); noutval=Int64(16); 
         modelval=parse(Int64,str0);
         str1_1 = get_gtk_property(mf1,:text,String); 
+        if f11.selected==0; i_advanced=Int64(0); elseif f11.selected==1; i_advanced=Int64(1); elseif f11.selected==2; i_advanced=Int64(2); end
 
         #coloring of mesh: 0..none, 1..thickness, 2..porosity, 3..permeability, 4..alpha
         i_var_in=mf3.selected
@@ -376,7 +384,7 @@ using LinearAlgebra
         else
             modeltype = LCMsim_v2.model_3
         end  
-        case=LCMsim_v2.create(meshfile,partfile,simfile,modeltype)
+        case=LCMsim_v2.create(meshfile,partfile,simfile,modeltype,i_advanced)
             
         if i_batch==0
             if isfile(_meshfile)
@@ -548,6 +556,7 @@ using LinearAlgebra
         str61 = get_gtk_property(r,:text,String)
         restartval=Int64(0); interactiveval=Int64(0); noutval=Int64(16); 
         modelval=parse(Int64,str0);
+        if f11.selected==0; i_advanced=Int64(0); elseif f11.selected==1; i_advanced=Int64(1); elseif f11.selected==2; i_advanced=Int64(2); end
 
         if i_batch==1            
             meshfile=get_gtk_property(mf,:text,String);
@@ -689,7 +698,7 @@ using LinearAlgebra
         else
             modeltype = LCMsim_v2.model_3
         end  
-        case=LCMsim_v2.create(meshfile,partfile,simfile,modeltype)
+        case=LCMsim_v2.create(meshfile,partfile,simfile,modeltype,i_advanced)
         
         if i_batch==0
             if isfile(_meshfile)
@@ -825,6 +834,7 @@ using LinearAlgebra
         restartval=Int64(0); interactiveval=Int64(0); noutval=Int64(16); 
         modelval=parse(Int64,str0);
         str1_1 = get_gtk_property(mf1,:text,String); 
+        if f11.selected==0; i_advanced=Int64(0); elseif f11.selected==1; i_advanced=Int64(1); elseif f11.selected==2; i_advanced=Int64(2); end
 
         #coloring of mesh: 0..none, 1..thickness, 2..porosity, 3..permeability, 4..alpha
         i_var_in=parse(Int,str1_1)
@@ -912,7 +922,7 @@ using LinearAlgebra
             rm(_psetfile)
         end
 
-        case=LCMsim_v2.create(meshfile,partfile,simfile,modeltype)
+        case=LCMsim_v2.create(meshfile,partfile,simfile,modeltype,i_advanced)
         
         if isfile(_meshfile)
             rm(_meshfile)
@@ -1091,6 +1101,7 @@ using LinearAlgebra
         str61 = get_gtk_property(r,:text,String)
         restartval=Int64(0); interactiveval=Int64(0); noutval=Int64(16); 
         modelval=parse(Int64,str0);
+        if f11.selected==0; i_advanced=Int64(0); elseif f11.selected==1; i_advanced=Int64(1); elseif f11.selected==2; i_advanced=Int64(2); end
 
         partfile = joinpath(mypath,"_part_description.csv")
         writefilename=partfile
@@ -1233,7 +1244,7 @@ using LinearAlgebra
             rm(_psetfile)
         end
 
-        LCMsim_v2.create_and_solve(savepath,meshfile,partfile,simfile,modeltype,t_max,t_step,LCMsim_v2.verbose,true,true)
+        LCMsim_v2.create_and_solve(savepath,meshfile,partfile,simfile,modeltype,i_advanced,t_max,t_step,LCMsim_v2.verbose,true,true)
         
         if isfile(_meshfile)
             rm(_meshfile)
@@ -1260,6 +1271,7 @@ using LinearAlgebra
         str61 = get_gtk_property(r,:text,String)
         restartval=Int64(1); interactiveval=Int64(0); noutval=Int64(16); 
         modelval=parse(Int64,str0);
+        if f11.selected==0; i_advanced=Int64(0); elseif f11.selected==1; i_advanced=Int64(1); elseif f11.selected==2; i_advanced=Int64(2); end
 
         partfile = joinpath(mypath,"_part_description.csv")
         writefilename=partfile
@@ -1403,7 +1415,7 @@ using LinearAlgebra
 
         sourcepath=joinpath(savepath,"data.jld2")
         output_intervals=16
-        LCMsim_v2.continue_and_solve(sourcepath,savepath,meshfile,partfile,simfile,modeltype,t_max,output_intervals,LCMsim_v2.verbose,true,true)
+        LCMsim_v2.continue_and_solve(sourcepath,savepath,meshfile,partfile,simfile,modeltype,i_advanced,t_max,output_intervals,LCMsim_v2.verbose,true,true)
         
         if isfile(_meshfile)
             rm(_meshfile)
@@ -1430,6 +1442,7 @@ using LinearAlgebra
         str61 = get_gtk_property(r,:text,String)
         restartval=Int64(0); interactiveval=Int64(0); noutval=Int64(16); 
         modelval=parse(Int64,str0);
+        if f11.selected==0; i_advanced=Int64(0); elseif f11.selected==1; i_advanced=Int64(1); elseif f11.selected==2; i_advanced=Int64(2); end
 
         if patchtype1val==1;
 		    #f1.selected = 0
@@ -1588,7 +1601,7 @@ using LinearAlgebra
             modeltype = LCMsim_v2.model_3
         end  
 
-        LCMsim_v2.create_and_solve(savepath,meshfile,partfile,simfile,modeltype,t_max,t_step,LCMsim_v2.verbose,true,true)
+        LCMsim_v2.create_and_solve(savepath,meshfile,partfile,simfile,modeltype,i_advanced,t_max,t_step,LCMsim_v2.verbose,true,true)
         
         if isfile(_meshfile)
             rm(_meshfile)
@@ -1615,6 +1628,7 @@ using LinearAlgebra
         str61 = get_gtk_property(r,:text,String)
         restartval=Int64(1); interactiveval=Int64(0); noutval=Int64(16); 
         modelval=parse(Int64,str0);
+        if f11.selected==0; i_advanced=Int64(0); elseif f11.selected==1; i_advanced=Int64(1); elseif f11.selected==2; i_advanced=Int64(2); end
 
         if patchtype1val==1;
 		    #f1.selected = 0
@@ -1774,7 +1788,7 @@ using LinearAlgebra
 
         sourcepath=joinpath(savepath,"data.jld2")
         output_intervals=16
-        LCMsim_v2.continue_and_solve(sourcepath,savepath,meshfile,partfile,simfile,modeltype,t_max,output_intervals,LCMsim_v2.verbose,true,true)
+        LCMsim_v2.continue_and_solve(sourcepath,savepath,meshfile,partfile,simfile,modeltype,i_advanced,t_max,output_intervals,LCMsim_v2.verbose,true,true)
         
         if isfile(_meshfile)
             rm(_meshfile)
@@ -2172,6 +2186,7 @@ using LinearAlgebra
         else
             modeltype = LCMsim_v2.model_3
         end  
+        if f11.selected==0; i_advanced=Int64(0); elseif f11.selected==1; i_advanced=Int64(1); elseif f11.selected==2; i_advanced=Int64(2); end
         
         filename_parts=splitpath(meshfile)
         _psetfile=joinpath( joinpath(filename_parts[1:end-1]) ,"_pset.csv")
@@ -2186,7 +2201,7 @@ using LinearAlgebra
             rm(_meshfile)
         end
 
-        LCMsim_v2.create_and_solve(savepath,meshfile,partfile,simfile,modeltype,t_max,t_step,LCMsim_v2.verbose,true,true)
+        LCMsim_v2.create_and_solve(savepath,meshfile,partfile,simfile,modeltype,i_advanced,t_max,t_step,LCMsim_v2.verbose,true,true)
     end
     function a0_1_clicked(w)
         str = get_gtk_property(dir,:text,String); 
@@ -2239,6 +2254,7 @@ using LinearAlgebra
         restartval=Int64(0); interactiveval=Int64(0); noutval=Int64(16); 
         modelval=parse(Int64,str0);
         str1_1 = get_gtk_property(mf1,:text,String); 
+        if f11.selected==0; i_advanced=Int64(0); elseif f11.selected==1; i_advanced=Int64(1); elseif f11.selected==2; i_advanced=Int64(2); end
 
         #coloring of mesh: 0..none, 1..thickness, 2..porosity, 3..permeability, 4..alpha
         i_var_in=parse(Int,str1_1)
@@ -2327,7 +2343,7 @@ using LinearAlgebra
             modeltype = LCMsim_v2.model_3
         end  
 
-        case=LCMsim_v2.create(meshfile,partfile,simfile,modeltype)
+        case=LCMsim_v2.create(meshfile,partfile,simfile,modeltype,i_advanced)
         
         if isfile(_meshfile)
             rm(_meshfile)
@@ -2515,6 +2531,7 @@ using LinearAlgebra
         restartval=Int64(0); interactiveval=Int64(0); noutval=Int64(16); 
         modelval=parse(Int64,str0);
         str1_1 = get_gtk_property(mf1,:text,String); 
+        if f11.selected==0; i_advanced=Int64(0); elseif f11.selected==1; i_advanced=Int64(1); elseif f11.selected==2; i_advanced=Int64(2); end
 
         #coloring of mesh: 0..none, 1..thickness, 2..porosity, 3..permeability, 4..alpha
         i_var_in=mf3.selected
@@ -2664,7 +2681,7 @@ using LinearAlgebra
         else
             modeltype = LCMsim_v2.model_3
         end  
-        case=LCMsim_v2.create(meshfile,partfile,simfile,modeltype)
+        case=LCMsim_v2.create(meshfile,partfile,simfile,modeltype,i_advanced)
             
         if i_batch==0
             if isfile(_meshfile)
