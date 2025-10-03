@@ -292,7 +292,7 @@ using LinearAlgebra
                     push!(notusedsets, "4")    
                     push!(notusedsets, "5")    
                     push!(notusedsets, "6")    
-                    else
+                else
                     push!(notusedsets, "6")                
                     if patchtype1val==0 || patchtype1val==1 || patchtype1val==3
                         push!(notusedsets, "2")
